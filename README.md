@@ -37,20 +37,32 @@
 
 ## 🚀 Quick Start
 
-**安装依赖**
+### 1. 安装 Python 依赖
 
 ```bash
 pip install pymupdf pymupdf4llm
 pip install markdown jinja2   # 可选，用于更精美的渲染
 ```
 
-**添加 Skill（Codex CLI）**
+### 2. 在 Codex 中安装 Skill
+
+**方式一：让 Codex 帮你安装**
+
+在 Codex 中发送：
+
+```
+install skill from https://github.com/w1ndz321/paperpulse-skill
+```
+
+**方式二：手动安装**
 
 ```bash
 git clone https://github.com/w1ndz321/paperpulse-skill ~/.codex/skills/paperpulse-skill
 ```
 
-**使用**
+---
+
+### 使用
 
 在 Codex 中发送：
 
