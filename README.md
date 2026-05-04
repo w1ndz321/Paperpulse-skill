@@ -67,7 +67,13 @@ git clone https://github.com/w1ndz321/paperpulse-skill ~/.codex/skills/paperpuls
 在 Codex 中发送：
 
 ```
-用 PaperPulse 读这篇论文：/path/to/paper.pdf
+阅读这篇文章 /path/to/paper.pdf
+```
+
+或指定 Skill：
+
+```
+使用 paperpulse-skill 阅读这篇文章 /path/to/paper.pdf
 ```
 
 **输出结构**
@@ -78,4 +84,3 @@ outputs/<paper-slug>/
 ├── report.md        ← 中文解读正文
 └── images/          ← 截取的图表截图
 ```
-ba lun wen bi
