@@ -1,3 +1,54 @@
+# PaperPulse Skill
+
+把 CS / AI / LLM 学术 PDF 变成图文并茂的中文解读页，可直接分享或部署到 GitHub Pages。
+
+```
+PDF → source_text.md + images/ + captions.json → report.md → report.html
+```
+
+## Quick Start
+
+**1. 安装依赖**
+
+```bash
+pip install pymupdf pymupdf4llm
+```
+
+可选（用于更好的 Markdown 渲染和 HTML 模板）：
+
+```bash
+pip install markdown jinja2
+```
+
+**2. 添加 Skill**
+
+将本仓库克隆到 Codex 的 skill 目录，或在 Codex 配置中指向 `openai.yaml`：
+
+```bash
+git clone https://github.com/w1ndz321/paperpulse-skill ~/.codex/skills/paperpulse-skill
+```
+
+**3. 使用**
+
+在 Codex 中直接把 PDF 路径发给 PaperPulse Skill，例如：
+
+```
+用 PaperPulse 读这篇论文：/path/to/paper.pdf
+```
+
+**4. 输出**
+
+```
+outputs/<paper-slug>/
+├── report.md        # 中文解读正文
+├── report.html      # 可直接打开或部署的 HTML 页面
+├── source_text.md   # 提取的论文正文
+├── captions.json    # 图表元数据
+└── images/          # 截取的图表截图
+```
+
+---
+
 ## 效果展示
 
 以下是用 PaperPulse 生成的论文解读页面，点击标题直接阅读：
