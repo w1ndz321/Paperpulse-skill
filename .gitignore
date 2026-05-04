@@ -1,0 +1,5 @@
+outputs/
+.DS_Store
+.gitignore
+__pycache__/
+*.pyc
