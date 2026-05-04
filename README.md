@@ -84,3 +84,7 @@ outputs/<paper-slug>/
 ├── report.md        ← 中文解读正文
 └── images/          ← 截取的图表截图
 ```
+
+---
+
+本项目由 [Codex](https://openai.com/codex) 与 [Claude](https://claude.ai)（Anthropic）辅助开发。
