@@ -1,0 +1,92 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/2507.02259v1.pdf",
+  "title": "MemAgent: Reshaping Long-Context LLM with Multi-Conv RL-based Memory Agent",
+  "slug": "memagent-reshaping-long-context",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "paper": [
+      "https://arxiv.org/abs/2507.02259v1"
+    ],
+    "other": [
+      "mailto:zhouhao@air.tsinghua.edu.cn",
+      "mailto:wangmingxuan.89@bytedance.com",
+      "https://memagent-sialab.github.io/"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p001",
+      "kind": "figure",
+      "page": 1,
+      "image": "images/figure_01_p001.png",
+      "caption": "Figure 1 Accuracy scores of RULER-HotpotQA [1, 2] . Even models that employ long-context continual pretraining and extrapolation techniques fail to maintain consistent performance. In contrast, MemAgent with RL demonstrates nearly lossless performance extrapolation.",
+      "nearby_text": "Date: July 4, 2025 Correspondence: zhouhao@air.tsinghua.edu.cn, wangmingxuan.89@bytedance.com Project Page: https://memagent-sialab.github.io/ 80 60 Score RL-MemAgent-14B RL-MemAgent-7B QwenLong-L1-32B Qwen2.5-Instruct-14B-1M Qwen2.5-Instruct-7B-1M DS-Distill-Qwen-32B DS-Distill-Qwen-14B DS-Distill-Qwen-7B Truncation 40 20 0 7K 112K 224K 448K 896K 1.75M 3.5M Context Length in Tokens Figure 1 Accuracy scores of RULER-HotpotQA [1, 2] . Even models that employ long-context continual pretraining and extrapolation techniques fail to maintain consistent performance. In contrast, MemAgent with RL demonstrates nearly lossless performance extrapolation. 1"
+    },
+    {
+      "id": "figure_02_p003",
+      "kind": "figure",
+      "page": 3,
+      "image": "images/figure_02_p003.png",
+      "caption": "Figure 2 MemAgent is inspired by the way humans process long documents. It divides the document into multiple chunks and allows LLMs to process them iteratively, recording relevant information in memory. Finally, LLMs generate answers based on the information stored in the memory.",
+      "nearby_text": "Solving Long-Context Task with Long-Context LLM A Long-Context LLM 1 Q 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 … N-2 N-1 N Text Chunk Q Question 3 Memory A 1 2 3 A Answer … LLM LLM LLM LLM Q N K Q 1 Q 2 1 Q 3 2 Solving Long-Context Task with Memory Agent via RL Figure 2 MemAgent is inspired by the way humans process long documents. It divides the document into multiple chunks and allows LLMs to process them iteratively, recording relevant information in memory. Finally, LLMs generate answers based on the information stored in the memory. long-context processing. • We design an agent workflow to implement this mechanism and propose an end-to-end training approach using the multi-conversation "
+    },
+    {
+      "id": "table_01_p005",
+      "kind": "table",
+      "page": 5,
+      "image": "images/table_01_p005.png",
+      "caption": "Table 1 Template of MemAgent for context processing (top part) and final answer generation (bottom). Curly-brace placeholders {} will be replaced with actual content.",
+      "nearby_text": "You are presented with a problem, a section of an article that may contain the answer, and a previous memory. Please read the section carefully and update the memory with new information that helps to answer the problem, while retaining all relevant details from the previous memory. <problem> {prompt} </problem> <memory> {memory} </memory> <section> {chunk} </section> Updated memory: You are presented with a problem and a previous memory. Please answer the problem based on the previous memory and put the answer in \\boxed {}. <problem> {prompt} </problem> <memory> {memory} </memory> Your answer: Table 1 Template of MemAgent for context processing (top part) and final answer generation (bottom"
+    },
+    {
+      "id": "figure_03_p006",
+      "kind": "figure",
+      "page": 6,
+      "image": "images/figure_03_p006.png",
+      "caption": "Figure 3 Comparison between vanilla GRPO and Multi-Conv DAPO. During the rollout phase of Multi-conv DAPO, each sample generates multiple conversations. The answer contained in the final conversation is used to compute the reward and advantage, which are then employed to optimize all preceding conversations.",
+      "nearby_text": "KL 𝒥clip o1 r1 A1 Reference Model o2 r2 A2 q Policy Model Rule-Based Group Normalization Verifier … … … oG rG AG Frozen Model GRPO Trainable Model 𝒥clip KL Group of Conversations Take part in Adv. Compute Context-Independent Conversations o1,1 o1,2 … o1,c1 r1 A1 Reference Model r2 A2 q Policy Model Rule-Based Group Normalization o2,1 o2,2 … o2,c2 Verifier … … … rG AG Multi-conv DAPO oG,1 oG,2 … oG,cG Figure 3 Comparison between vanilla GRPO and Multi-Conv DAPO. During the rollout phase of Multi-conv DAPO, each sample generates multiple conversations. The answer contained in the final conversation is used to compute the reward and advantage, which are then employed to optimize all preceding c"
+    },
+    {
+      "id": "figure_04_p007",
+      "kind": "figure",
+      "page": 7,
+      "image": "images/figure_04_p007.png",
+      "caption": "Figure 4 The architecture and graphic model of MemAgent. The memory is modeled as a latent memory variable, thereby enabling the decomposition of the autoregressive language model into multiple steps of reading from and writing to the memory.",
+      "nearby_text": "External Input External Output External Input External Output Controller p(ck ∣mk−1) p(mk ∣ck, mk−1) c1 c2 cK+1 cK … Read Head Write Head ∅ m1 m2 mK … t = 0 t = 1 t = 2 t = K t = K + 1 Memory Architecture of MemAgent Graphical Model of MemAgent Figure 4 The architecture and graphic model of MemAgent. The memory is modeled as a latent memory variable, thereby enabling the decomposition of the autoregressive language model into multiple steps of reading from and writing to the memory. p(x1:N) = QN n=1 p(xn | x1:n−1), implicitly assuming that every past token (or at least its hidden state) must stay in the active context. This is what turns quadratic attention into the long-context bottleneck. "
+    },
+    {
+      "id": "table_02_p009",
+      "kind": "table",
+      "page": 9,
+      "image": "images/table_02_p009.png",
+      "caption": "Table 2 Main experimental results comparing model performance across various context lengths. All values represent accuracy (%).",
+      "nearby_text": "with 128K context length, the input consists of 120,000 tokens, with an output of 10,000 tokens. For the model with 1M context length, the input is 990,000 tokens, with an output of 10,000 tokens. 4.3 Main Results The main experimental results are reported in Table 2. We conduct a comparative analysis of all model performances within the context length ranging from 7K to 896K. Specifically, for the MemAgent model, we extend our evaluation to explore its extrapolation capabilities on ultra-long contexts of 1.75M and 3.5M, assessing how the model generalizes beyond the standard context range. From these results, we observe that MemAgent exhibits remarkable length extrapolation capabilities wit"
+    },
+    {
+      "id": "figure_05_p010",
+      "kind": "figure",
+      "page": 10,
+      "image": "images/figure_05_p010.png",
+      "caption": "Figure 5 Ablation study on RULER-HotpotQA comparing models with and without RL training across context lengths from 28K to 896K tokens.",
+      "nearby_text": "80 70 60 50 Score 40 RL-MemAgent-14B RL-MemAgent-7B MemAgent-32B w/o RL MemAgent-14B w/o RL MemAgent-7B w/o RL Qwen2.5-Instruct-32B Qwen2.5-Instruct-14B Qwen2.5-Instruct-7B Truncation 30 20 10 0 7K 28K 112K 224K 448K 896K Context Length in Tokens Figure 5 Ablation study on RULER-HotpotQA comparing models with and without RL training across context lengths from 28K to 896K tokens. context lengths ranging from 8K to 512K tokens for these tasks, except that SQuAD extends only to 256K tokens due to limited document length. Figure 6 presents the performance comparison across different task categories. The results demonstrate that MemAgent maintains consistently superior performance across diverse"
+    },
+    {
+      "id": "figure_06_p010",
+      "kind": "figure",
+      "page": 10,
+      "image": "images/figure_06_p010.png",
+      "caption": "Figure 6 presents the performance comparison across different task categories. The results demonstrate that MemAgent maintains consistently superior performance across diverse task types. Particularly, MemAgent- 14B achieves over 95% accuracy on the average RULER tasks in context ranging from 8K to 512K, while MemAgent-7B achieves the best performance, surpassing 32B model without RL training and long-context post-trained models. MemAgent-7B/14B both maintain stable performance on the SQuAD-based QA task, indicating that memorizing ability can generalize beyond training data. In contrast, baseline models show significant degradation beyond 128K tokens across all task categories.",
+      "nearby_text": "70 60 50 Score 40 RL-MemAgent-14B RL-MemAgent-7B MemAgent-32B w/o RL MemAgent-14B w/o RL MemAgent-7B w/o RL Qwen2.5-Instruct-32B Qwen2.5-Instruct-14B Qwen2.5-Instruct-7B Truncation 30 20 10 0 7K 28K 112K 224K 448K 896K Context Length in Tokens Figure 5 Ablation study on RULER-HotpotQA comparing models with and without RL training across context lengths from 28K to 896K tokens. context lengths ranging from 8K to 512K tokens for these tasks, except that SQuAD extends only to 256K tokens due to limited document length. Figure 6 presents the performance comparison across different task categories. The results demonstrate that MemAgent maintains consistently superior performance across diverse ta"
+    },
+    {
+      "id": "figure_07_p011",
+      "kind": "figure",
+      "page": 11,
+      "image": "images/figure_07_p011.png",
+      "caption": "Figure 6 Performance heatmaps on RULER benchmark tasks showing accuracy scores across different context lengths (greener indicates better performance). Models are grouped by type on the vertical axis. (a) Average performance across 10 synthetic tasks including needle-in-a-haystack variants, variable tracking, and word extraction. (b) Question answering task synthesized from SQuAD dataset with context lengths up to 256K tokens.",
+      "nearby_text": "100 100 RL-MemAgent-14B 97.45 96.97 97.46 97.85 96.08 96.24 95.40 RL-MemAgent-14B 77.34 76.56 79.69 77.34 78.12 77.34 RL-MemAgent-7B 93.03 92.03 91.33 88.83 86.92 83.70 81.91 RL-MemAgent-7B 81.25 81.25 82.03 76.56 79.69 81.25 MemAgent-32B w/o RL 99.04 96.59 94.61 91.85 86.56 83.57 81.51 MemAgent-32B w/o RL 78.12 75.00 71.09 75.00 73.44 71.09 80 80 MemAgent-14B w/o RL 97.95 90.22 87.43 80.30 67.97 58.88 46.18 MemAgent-14B w/o RL 70.31 68.75 70.31 66.41 64.84 53.91 MemAgent-7B w/o RL MemAgent-7B w/o RL 92.56 92.47 90.52 88.36 84.46 80.05 73.48 60.16 66.41 58.59 55.47 66.02 57.03 QwenLong-L1-32B QwenLong-L1-32B 92.00 91.23 91.40 77.39 41.66 23.22 14.78 82.81 78.91 73.44 67.19 36.72 33.59 60 60 "
+    }
+  ]
+}

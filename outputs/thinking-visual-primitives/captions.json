@@ -1,0 +1,99 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/Thinking_with_Visual_Primitives.pdf",
+  "title": "Thinking with Visual Primitives",
+  "slug": "thinking-visual-primitives",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {},
+  "assets": [
+    {
+      "id": "figure_01_p002",
+      "kind": "figure",
+      "page": 2,
+      "image": "images/figure_01_p002.png",
+      "caption": "Figure 1 | (a) Token consumption across various models for an 800 × 800 resolution image. (b) Average performance across 7 benchmarks—including counting and spatial reasoning—with in-house benchmarks excluded. We note that the reported scores cover only a subset of evaluation dimensions that are directly relevant to the research focus of this paper, and are therefore not indicative of the models’ overall capabilities. For an 800 × 800 input, our model retains only approximately 90 entries in the KV cache, delivering competitive performance through a highly efficient compression strategy. Best viewed on screen.",
+      "nearby_text": "KV Cache Entries Tokens Before Compression ~289 69.7% Gemma-4-31B ~361 (~90 entries in KV Cache) 77.2% Ours-284B-A13B ~660 68.1% Qwen3-VL-235B-A22B ~740 71.1% GPT-5.4 ~870 65.3% Claude-Sonnet-4.6 ~1100 76.5% Gemini-3-Flash 0 200 400 600 800 1000 1200 1400 40 50 60 70 80 (a) Token Efficiency (b) Average Score on Selected Benchmarks ( Lower is Better) ( Higher is Better) Figure 1 | (a) Token consumption across various models for an 800 × 800 resolution image. (b) Average performance across 7 benchmarks—including counting and spatial reasoning—with in-house benchmarks excluded. We note that the reported scores cover only a subset of evaluation dimensions that are directly relevant to the resear"
+    },
+    {
+      "id": "figure_02_p003",
+      "kind": "figure",
+      "page": 3,
+      "image": "images/figure_02_p003.png",
+      "caption": "Figure 2 | Model architecture and training pipeline. Developed upon the DeepSeek-V4-Flash [3], our model acquires foundational visual primitive generation capabilities during the pretraining phase. This is followed by a post-training stage employing an expert-wise specialization and consolidation paradigm. Best viewed on screen.",
+      "nearby_text": "Language Response with Visual Primitives Pretraining De-Tokenizer Specialized SFT DeepSeek-V4-Flash Specialized RL Unified RFT DeepSeek-ViT Text Tokenizer On-Policy Distillation Image Language Instruct (a) Architecture (b) Training Pipeline Figure 2 | Model architecture and training pipeline. Developed upon the DeepSeek-V4-Flash [3], our model acquires foundational visual primitive generation capabilities during the pretraining phase. This is followed by a post-training stage employing an expert-wise specialization and consolidation paradigm. Best viewed on screen. visual token into one entry. This design allows the model to operate with only a fraction of the visual tokens used by other fro"
+    },
+    {
+      "id": "figure_03_p008",
+      "kind": "figure",
+      "page": 8,
+      "image": "images/figure_03_p008.png",
+      "caption": "Figure 3 | Illustrative examples of cold-start data for coarse-grained and fine-grained counting. The model performs intent decomposition and utilizes visual primitives to anchor all pertinent entities, followed by a systematic counting procedure grounded in the visual domain. Best viewed on screen with zoom.",
+      "nearby_text": "Response There are 25 men in this image. Image with Visual Primitives Fine-grained Counting Thinking with Visual Primitives 1. **What am I looking for** The question asks me to count the bears that are on the ground. I need to scan the entire scene, locate all the bears, and check their positions to ensure I only count those standing on the earth or rocks, excluding any that might be elevated or climbing. 2. **Evaluating each bear's position** Starting my scan near the top of the image, I spot a <｜ref｜>bear<｜/ref｜><｜box｜>[[452,23,804,411]] <｜/box｜> clinging vertically to a tall, dead tree trunk. Because it is climbing and clearly not on the ground, I will exclude it from my count. Looking lo"
+    },
+    {
+      "id": "figure_04_p009",
+      "kind": "figure",
+      "page": 9,
+      "image": "images/figure_04_p009.png",
+      "caption": "Figure 4 | Illustrative cold-start data for spatial reasoning. The model performs intent decom- position and utilizes visual primitives to anchor all pertinent entities, facilitating sophisticated multi-hop logical inference. Best viewed on screen with zoom.",
+      "nearby_text": "1. **Analyzing the request** The user is asking to verify if there is a \"purple rubber object\" that shares the same size as the \"gray metallic object\". This requires a multi-step attribute verification and comparison: first, I must locate the gray metallic object to determine its relative size in the scene. Second, I need to scan the scene for any purple rubber objects that match this specific size. 2. **Locating the gray metallic object** Scanning the objects in the scene, I spot a gray, highly reflective spherical object in the background towards the upper center-right. This is the <｜ref｜>small gray metal sphere<｜/ref｜><｜box｜>[[502,209,555, 288]] <｜/box｜>. Comparing it to the large cube, l"
+    },
+    {
+      "id": "figure_05_p010",
+      "kind": "figure",
+      "page": 10,
+      "image": "images/figure_05_p010.png",
+      "caption": "Figure 5 | Example of cold-start data for the maze navigation task. The model first identifies the start and end points, then explores possible paths in a DFS manner. Best viewed on screen with zoom.",
+      "nearby_text": "**Start Exploring**: **Step1**: Reaching <｜point｜>[[357,369]]<｜/point｜> after going upper-right, I face 2 directions to choose from (lower-right, left).lower-right direction might also be correct, but I'll explore left direction first. **Step2**: Moving left: <｜point｜>[[357,369],[260,372]]<｜/point｜>...reaching <｜point｜>[[260,372]]<｜/point｜>, I see 2 forks here. Observing that upper-right direction is a straight dead end at <｜point｜>[[310,226]]<｜/point｜>, can see wall directly. Still need to explore left direction. **Step3**: Walking left: <｜point｜>[[260,372],[161,375]]<｜/point｜>...arriving at <｜point｜>[[161,375]]<｜/point｜>, this is another junction with 3 paths. Observing that upper-right di"
+    },
+    {
+      "id": "figure_06_p012",
+      "kind": "figure",
+      "page": 12,
+      "image": "images/figure_06_p012.png",
+      "caption": "Figure 6 | Example of cold-start data for the path tracing task. The model identifies the start and end points, then traces the line using visual primitives. Best viewed on screen with zoom.",
+      "nearby_text": "Path Tracing Thinking with Visual Primitives I find the starting point you mentioned, it's located here: <｜point｜>[[176,758]]<｜/point｜>. [Trigger_Placeholder] Where does the crown icon connect to? Put the destination icon name in \\boxed{}. Following this magenta line, the visual path I observe is: <｜point｜> [[176,759],[230,779],[294,799],[326,806],[361,806],[380,793],[386,780],[ 387,753],[382,722],[375,699],[364,665],[356,643],[345,613],[337,587],[3 33,572],[330,555],[332,543],[336,539],[345,537],[359,539],[370,543],[38 8,551],[402,558],[424,569],[447,580],[463,587],[485,596],[506,604],[519, 607],[536,610],[546,609],[558,606],[568,600],[572,594],[577,582],[578,5 69],[578,559],[576,543],[573,"
+    },
+    {
+      "id": "table_01_p017",
+      "kind": "table",
+      "page": 17,
+      "image": "images/table_01_p017.png",
+      "caption": "Table 1 | Comparison with frontier models. To ensure a fair comparison, we evaluated all models via their respective APIs using an identical set of prompts. The best results are highlighted in bold; the second-best results are underlined.",
+      "nearby_text": "Table 1 | Comparison with frontier models. To ensure a fair comparison, we evaluated all models via their respective APIs using an identical set of prompts. The best results are highlighted in bold; the second-best results are underlined. Category Benchmark (Metric) Gemini-3-Flash GPT-5.4 Claude-Sonnet-4.6 Gemma4-31B Qwen3-VL Ours 235B-A22B-Thinking 284B-A13B-Thinking CountQA (EM / RA@10) 66.1/75.1 48.3 / 60.3 34.8 / 46.6 43.2 / 54.6 42.7 / 54.8 64.9/74.1 Counting Pixmo-Count (EM) 88.2 76.6 68.7 82.9 77.2 89.2 DS_Finegrained_Counting (EM) 79.1 84.2 82.6 79.5 87.2 88.7 MIHBench (ACC) 83.2 83.5 81.7 82.2 75.1 85.3 SpatialMQA (ACC) 67.0 61.9 58.2 60.6 54.5 69.4 Spatial Reasoning EmbSpatial (ACC"
+    },
+    {
+      "id": "figure_07_p019",
+      "kind": "figure",
+      "page": 19,
+      "image": "images/figure_07_p019.png",
+      "caption": "Figure 7 | Showcases of thinking with grounding. Examples include fine-grained counting and counter-commonsense visual question answering, Best viewed on screen with zoom.",
+      "nearby_text": "Image with Visual Primitives [Trigger_Placeholder] How many Chihuahuas are there in the picture? Thinking with Visual Primitives 1. **Defining the target animal** The question asks me to count the number of Chihuahuas in the image. I need to focus on differentiating the dogs from the blueberry muffins that also appear in the grid. Looking at the overall layout, the grid seems to contain alternating photos of dogs and muffins. 2. **Scanning the grid for dogs** I‘ll search the entire grid to locate every dog. After scanning the rows, I spot the following set of distinct Chihuahuas: <｜ref｜>Chihuahuas<｜/ref｜><｜box｜>[[2,366,233,641],[247,0,498,341], [255,680,498,997],[499,347,749,670],[743,0,996,"
+    },
+    {
+      "id": "figure_08_p020",
+      "kind": "figure",
+      "page": 20,
+      "image": "images/figure_08_p020.png",
+      "caption": "Figure 8 | Showcases of thinking with grounding. Examples include world-knowledge-based question answering and seeking actionable suggestions. Best viewed on screen with zoom.",
+      "nearby_text": "Image with Visual Primitives [Trigger_Placeholder] 这是哪⼉？ Thinking with Visual Primitives 1. **初识⼩巷** 这是⼀张充满古朴与岁⽉感的照⽚，展现了⼀条幽静的巷弄。整个场景有⼀种令⼈放松的安静氛围，似乎 在某个历史悠久的古镇或传统村落⾥。 2. **观察建筑与街道** ⽬光⾸先被左侧的建筑吸引，那⾥有⾼挑的<｜ref｜>深⾊⽊制⻔框<｜/ref｜><｜box｜>[[2,249,176, 607]]<｜/box｜>，做⼯精致，上⽅还悬挂着<｜ref｜>传统的⽅形灯笼<｜/ref｜><｜box｜>[[56,219,118, 284]]<｜/box｜>，增添了⼀抹古⾊古⾹的韵味。⽊⻔旁边，⼀⾯<｜ref｜>泥⼟质感的墙壁<｜/ref｜ ><｜box｜>[[123,254,341,609]]<｜/box｜> 裸露着，看起来经过岁⽉的洗礼⽽显得斑驳，上⾯还贴着⼀些 颜⾊鲜艳的<｜ref｜>⼩型⼴告海报<｜/ref｜><｜box｜>[[182,412,259,510]]<｜/box｜>，给旧墙带⼊了 些许现代的⽣活⽓息。视线转向街道中央，是⼀条经典的<｜ref｜>鹅卵⽯铺成的步道<｜/ref｜><｜ box｜>[[0,554,675,995]]<｜/box｜>。步道由不规则的⽯块拼嵌⽽成，中间的平整⽯板和两侧圆润的砾⽯相 互交替，纹理⾮常清晰。迈步向巷⼦深处看去，可以看到更远处的<｜ref｜>经典⽼式建筑<｜/ref｜><｜ box｜>[[320,330,515,555]]<｜/box｜>，它们保持"
+    },
+    {
+      "id": "figure_09_p021",
+      "kind": "figure",
+      "page": 21,
+      "image": "images/figure_09_p021.png",
+      "caption": "Figure 9 | Showcases of thinking with grounding. Examples include humor comprehension in images, escape room game guidance, and counting. Best viewed on screen with zoom.",
+      "nearby_text": "Response 要逃出⽣天，你可以把⽊椅移动到挂着钥匙的架⼦下⽅，踩着椅⼦拿到钥匙，然后去开右侧的⻔。 Image with Visual Primitives [Trigger_Placeholder] How many people are there? Thinking with Visual Primitives 1. **Understanding the task** I need to count the number of people visible in the image. The picture is a large group portrait featuring several rows of individuals, so I need to scan carefully from the back to the front to ensure no one is missed. 2. **Scanning the group for individuals** I'll look across the entire frame, identifying heads, faces, and bodies to pick out each individual. Sweeping across the arrangement of people, I find all of them: <｜ref｜>people<｜/ref｜><｜box｜>[[4,459,80, 859],[32,506,147,900],[105,477,189,883],[1"
+    },
+    {
+      "id": "figure_10_p022",
+      "kind": "figure",
+      "page": 22,
+      "image": "images/figure_10_p022.png",
+      "caption": "Figure 10 | Showcases of thinking with pointing. Examples include maze navigation and path tracing. Best viewed on screen with zoom.",
+      "nearby_text": "**Final Path**: After exploration, the correct route is: <｜point｜>[[555,499],[597,472],[600,594],[544,682],[532,720],[471,722],[415,683],[371,637],[378,587],[396,467],[368,397],[330,355],[300,450],[265,472],[247,416]] <｜/point｜> Successfully reaching the destination: <｜point｜>[[247,416]]<｜/point｜>! Response The maze is solvable. The verified path is: <｜point｜>[[555,499],[597,472],[600,594],[544,682],[532,720],[471,722],[415,683],[371,637],[378,587],[396,467],[368,397],[330,355],[300,450],[265,472],[247,416]] <｜/point｜> [\\boxed{True}] [Trigger_Placeholder] What number does C connect to? Show the path and output \\boxed{endpoint number}. Thinking with Visual Primitives I find the starting point"
+    }
+  ]
+}

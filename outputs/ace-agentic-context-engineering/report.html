@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>别再把 Prompt 越改越短了：ACE 让大模型把经验攒成一本会进化的攻略书</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef8ff;
+            --page: #fffefa;
+            --card-bg: #ffffff;
+            --text: #17324d;
+            --muted: #6f8aa3;
+            --accent: #1976c9;
+            --accent-light: #54b7ff;
+            --accent-soft: #e4f4ff;
+            --accent-deep: #0f4c81;
+            --accent-mint: #35b9b0;
+            --mint-soft: #e4f8f5;
+            --accent-warm: #f08ab1;
+            --warm-soft: #fff0f6;
+            --cream: #fff8df;
+            --border: #d7e9f7;
+            --border-soft: #eaf3fb;
+            --shadow: rgba(48, 100, 142, 0.12);
+            --shadow-soft: rgba(62, 111, 148, 0.08);
+        }
+
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            background:
+                linear-gradient(rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(180deg, #fbfdff 0%, #eef8ff 46%, #eaf6ff 100%);
+            background-size: 28px 28px, 28px 28px, auto;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(115deg, rgba(255, 248, 223, 0.66), transparent 34%),
+                linear-gradient(245deg, rgba(228, 248, 245, 0.55), transparent 42%);
+            opacity: 0.78;
+        }
+
+        ::selection {
+            background: rgba(66, 165, 245, 0.26);
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+        main > article {
+            position: relative;
+            background:
+                linear-gradient(180deg, rgba(255, 254, 250, 0.96) 0%, rgba(251, 253, 255, 0.98) 100%);
+            border: 1px solid rgba(215, 233, 247, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 22px 70px var(--shadow-soft);
+        }
+
+        main > article::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            right: 1.25rem;
+            top: 0;
+            height: 4px;
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint), var(--accent-warm));
+            opacity: 0.72;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.32rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.35;
+            color: var(--text);
+            max-width: 780px;
+            text-wrap: balance;
+        }
+
+        .tldr-card {
+            background:
+                linear-gradient(135deg, #ffffff 0%, #f2fbff 52%, #fff4f9 100%);
+            border: 1px solid rgba(84, 183, 255, 0.32);
+            border-left: 4px solid var(--accent-warm);
+            border-radius: 8px;
+            padding: 1.65rem 1.5rem 1.35rem;
+            position: relative;
+            box-shadow: 0 14px 36px var(--shadow-soft);
+            animation: soft-rise 0.55s ease-out both;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .tldr-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(240, 138, 177, 0.42);
+            box-shadow: 0 18px 42px var(--shadow);
+        }
+
+        .tldr-card::before {
+            content: 'TL;DR NOTE';
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 500;
+            color: #b64f77;
+            letter-spacing: 0.08em;
+            position: absolute;
+            top: 0.82rem;
+            left: 1.5rem;
+            background: rgba(255, 240, 246, 0.92);
+            border: 1px solid rgba(240, 138, 177, 0.18);
+            padding: 0.12rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .tldr-card::after {
+            content: '';
+            position: absolute;
+            top: 0.95rem;
+            right: 1.1rem;
+            width: 42px;
+            height: 14px;
+            border-top: 2px dotted rgba(53, 185, 176, 0.5);
+            border-bottom: 2px dotted rgba(240, 138, 177, 0.42);
+            opacity: 0.72;
+        }
+
+        .tldr-content {
+            font-size: 1rem;
+            line-height: 1.78;
+            color: var(--text);
+            padding-top: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .info-item {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,252,255,0.96));
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            min-width: 0;
+            box-sizing: border-box;
+            transition: max-height 0.3s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+            position: relative;
+            max-height: 78px;
+            overflow: hidden;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 22px rgba(48, 100, 142, 0.055);
+            animation: soft-rise 0.55s ease-out both;
+        }
+
+        .info-item:nth-child(2) { animation-delay: 0.04s; }
+        .info-item:nth-child(3) { animation-delay: 0.08s; }
+        .info-item:nth-child(4) { animation-delay: 0.12s; }
+
+        .info-item::before {
+            content: '';
+            position: absolute;
+            left: 0.8rem;
+            right: 0.8rem;
+            top: 0;
+            height: 3px;
+            border-radius: 0 0 5px 5px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint));
+            opacity: 0.42;
+        }
+
+        .info-item:hover {
+            border-color: rgba(84, 183, 255, 0.38);
+            box-shadow: 0 14px 34px var(--shadow);
+            transform: translateY(-2px);
+            z-index: 10;
+            max-height: 300px;
+        }
+
+        .info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-value {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        .info-link {
+            color: var(--accent);
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .info-link:hover {
+            text-decoration: underline;
+        }
+
+        .divider-section {
+            margin: 3rem 0 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .divider-line {
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-light) 20%, var(--accent-mint) 50%, var(--accent-warm) 82%, transparent 100%);
+            border-radius: 1px;
+        }
+
+        .divider-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.28rem 0.78rem;
+            animation: breathe 3.6s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.35; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .prose h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-top: 2.35rem;
+            margin-bottom: 0.875rem;
+            color: var(--text);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            text-wrap: balance;
+        }
+
+        .heading-emoji {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.8rem;
+            height: 1.8rem;
+            margin-right: 0.48rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-soft), var(--warm-soft));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            box-shadow: 0 6px 16px rgba(48, 100, 142, 0.07);
+            font-size: 1rem;
+            vertical-align: -0.12em;
+        }
+
+        .prose h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.0625rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.625rem;
+            color: var(--accent);
+        }
+
+        .prose p {
+            font-size: 1.03rem;
+            line-height: 1.9;
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .prose ul, .prose ol {
+            margin-bottom: 1rem;
+            padding-left: 1.25rem;
+        }
+
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.65;
+        }
+
+        .prose li::marker {
+            color: var(--accent);
+        }
+
+        .prose blockquote {
+            background: rgba(255, 248, 223, 0.58);
+            border-left: 3px solid var(--accent-warm);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .prose code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #eef8ff;
+            color: var(--accent);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        .prose pre {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1a365d;
+            color: #bee3f8;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .prose pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .prose strong {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .prose a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .prose a:hover {
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .prose img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 1.25rem auto 0.5rem;
+            border: 1px solid rgba(215, 233, 247, 0.88);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 16px 40px var(--shadow-soft);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose img:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 48px var(--shadow);
+        }
+
+        .prose figure {
+            margin: 1.5rem 0;
+        }
+
+        .prose .image-caption,
+        .prose figcaption {
+            margin: 0.625rem auto 0;
+            max-width: 92%;
+            padding: 0.68rem 0.92rem;
+            color: #163b5a;
+            background: linear-gradient(135deg, rgba(255, 254, 250, 0.96), rgba(228, 244, 255, 0.9));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            border-radius: 8px;
+            font-family: 'Outfit', 'Source Serif 4', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 650;
+            line-height: 1.6;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(48, 100, 142, 0.06);
+        }
+
+        .prose .spotlight-section {
+            margin: 3rem -0.5rem 2.4rem;
+            padding: 1.45rem 1.55rem 1.55rem;
+            border: 1px solid rgba(84, 183, 255, 0.24);
+            border-left: 5px solid var(--accent-warm);
+            border-radius: 8px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 223, 0.82) 44%, rgba(255, 240, 246, 0.78) 100%);
+            box-shadow: 0 18px 44px var(--shadow-soft);
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose .spotlight-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 54px var(--shadow);
+        }
+
+        .prose .spotlight-section::after {
+            content: '';
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            width: 46px;
+            height: 14px;
+            border-top: 2px dotted rgba(240, 138, 177, 0.38);
+            border-bottom: 2px dotted rgba(53, 185, 176, 0.32);
+            opacity: 0.8;
+        }
+
+        .prose .spotlight-section::before {
+            content: attr(data-label);
+            display: inline-block;
+            margin-bottom: 0.85rem;
+            padding: 0.18rem 0.55rem;
+            border-radius: 4px;
+            background: rgba(255, 240, 246, 0.86);
+            color: #b64f77;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .prose .spotlight-section h2 {
+            margin-top: 0;
+            color: #12314d;
+            border-bottom-color: rgba(25, 118, 201, 0.2);
+        }
+
+        .prose .spotlight-section p,
+        .prose .spotlight-section li {
+            color: #1c3650;
+        }
+
+        .prose .spotlight-section li {
+            margin-bottom: 0.72rem;
+        }
+
+        .prose .spotlight-section.research-block {
+            border-left-color: var(--accent-mint);
+            border-color: rgba(41, 167, 167, 0.24);
+            background:
+                linear-gradient(135deg, rgba(247, 252, 255, 0.98) 0%, rgba(228, 248, 245, 0.9) 58%, rgba(239, 248, 255, 0.9) 100%);
+        }
+
+        .prose .spotlight-section.research-block::before {
+            background: rgba(41, 167, 167, 0.12);
+            color: var(--accent-mint);
+        }
+
+        .prose table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            display: block;
+            overflow-x: auto;
+        }
+
+        .prose th,
+        .prose td {
+            border: 1px solid var(--border);
+            padding: 0.55rem 0.65rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .prose th {
+            background: #edf8ff;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .sidebar {
+            background: rgba(255, 254, 250, 0.88);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.375rem 0.75rem;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.15s ease;
+        }
+
+        .toc-link:hover {
+            color: var(--accent);
+            background: rgba(84, 183, 255, 0.11);
+        }
+
+        .toc-link.active {
+            color: var(--accent);
+            border-left-color: var(--accent-warm);
+            background: linear-gradient(90deg, var(--accent-soft), rgba(255, 240, 246, 0.78));
+            font-weight: 600;
+        }
+
+        .toc-link.h3 {
+            font-size: 0.75rem;
+            padding-left: 1.25rem;
+            font-weight: 400;
+        }
+
+        .scroll-hint {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 2rem;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .scroll-hint-arrow {
+            display: inline-block;
+            margin-top: 0.25rem;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes float {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #a9dbfb; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-light); }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @keyframes soft-rise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+            article {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+                border-radius: 0;
+            }
+            .hero-title { font-size: 1.75rem; }
+            .prose p { text-align: left; }
+            .prose .spotlight-section { margin-left: 0; margin-right: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sidebar fixed left-0 top-0 h-screen w-56 p-5 overflow-y-auto hidden lg:block">
+        <div class="sticky top-4">
+            <div class="flex items-center gap-2 mb-8">
+                <svg viewBox="0 0 16 16" class="w-5 h-5" fill="none">
+                    <circle cx="6" cy="6" r="4" stroke="#0066cc" stroke-width="1.5" fill="none"/>
+                    <line x1="9.5" y1="9.5" x2="14" y2="14" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="6" cy="6" r="1.5" fill="#0066cc" opacity="0.3"/>
+                </svg>
+                <span class="font-['Outfit'] font-semibold text-sm text-[var(--text)]">PaperPulse</span>
+            </div>
+
+            <p class="font-['JetBrains_Mono'] text-xs text-[var(--muted)] uppercase tracking-widest mb-3">Contents</p>
+            <ul id="toc-list" class="space-y-1"></ul>
+        </div>
+    </nav>
+
+    <main class="lg:ml-56">
+        <article class="max-w-4xl mx-auto px-8 py-12 lg:py-16">
+
+            <header class="mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded">PAPER NOTE</span>
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--muted)]">2026-05-03</span>
+                </div>
+            </header>
+
+            <section class="mb-6">
+                <h1 class="hero-title mb-6" id="hero-title">别再把 Prompt 越改越短了：ACE 让大模型把经验攒成一本会进化的攻略书</h1>
+
+                <div class="tldr-card mb-5">
+                    <p class="tldr-content" id="tldr-content">Loading...</p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <p class="info-label">PAPER</p>
+                        <div class="info-value" id="paper-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">CODE</p>
+                        <div class="info-value" id="code-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">AUTHORS</p>
+                        <p class="info-value" id="paper-authors">-</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">KEYWORDS</p>
+                        <p class="info-value" id="paper-keywords">-</p>
+                    </div>
+                </div>
+
+                <div class="scroll-hint">
+                    <span>scroll for the brief</span>
+                    <span class="scroll-hint-arrow">↓</span>
+                </div>
+            </section>
+
+            <div class="divider-section">
+                <div class="divider-line"></div>
+                <span class="divider-text">FULL BRIEF</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <section class="prose" id="content">
+                <h2>TL;DR</h2>
+<p>ACE 想解决的是 context adaptation 的“越优化越失忆”：传统方法会把经验压成短 prompt，细节和失败教训被洗掉。它把 context 变成可增长、可反思、可整理的 playbook，用 Generator、Reflector、Curator 逐步写入 delta。结果在 Agent 和金融推理任务上都更强，还明显省 rollout 和延迟。</p>
+<h2>论文基本信息</h2>
+<ul>
+<li>论文链接：<a href="https://arxiv.org/abs/2510.04618v3">arXiv 2510.04618v3</a></li>
+<li>代码链接：<a href="https://github.com/ace-agent/ace">github.com/ace-agent/ace</a>，项目页：<a href="https://ace-agent.github.io">ace-agent.github.io</a></li>
+<li>作者团队：Qizheng Zhang, Changran Hu, Shubhangi Upasani, Boyuan Ma, Fenglu Hong, Vamsidhar Kamanuru, Jay Rainton, Chen Wu, Mengmeng Ji, Hanchen Li, Urmish Thakker, James Zou, Kunle Olukotun；Stanford University, SambaNova Systems, UC Berkeley</li>
+<li>关键词：上下文工程、智能体自改进、在线适应、Prompt 优化、ACE</li>
+</ul>
+<h2>这篇论文真正反对的，是“把经验压成一句话”</h2>
+<p>过去几年大家一直在说 context engineering，但很多方法本质上还是在找一个更短、更顺、更泛化的系统提示词。问题是，Agent 和垂直领域任务并不总是需要“更简洁”的提示词。它们需要的是一堆具体的经验：这个 API 怎么调用、某类错误为什么会发生、某个领域概念如何判断、之前哪条策略坑过模型。</p>
+<p>ACE 这篇论文的观点很鲜明：context 不应该被当成短摘要，而应该被当成一本持续生长的 playbook。它不是要把模型训练得更聪明，而是让模型在运行过程中不断把可复用经验写进输入上下文里。</p>
+<figure class="image-block"><img src="images/figure_01_p001.png" alt="ACE 在 AppWorld、FiNER 和 Formula 三类任务上都超过 Base LLM、ICL、GEPA 和 Dynamic Cheatsheet。" /><figcaption>ACE 在 AppWorld、FiNER 和 Formula 三类任务上都超过 Base LLM、ICL、GEPA 和 Dynamic Cheatsheet。</figcaption></figure>
+<p>Figure 1 先给了一个总览：ACE 在 Agent 任务 AppWorld、金融实体识别 FiNER、金融数值推理 Formula 上都超过强基线。这里最关键的不是单点分数，而是它同时覆盖了工具调用型 Agent 和领域知识密集型推理。换句话说，论文想证明的不是“某个 prompt 调好了”，而是“把上下文做成可演化资产”这件事有普适价值。</p>
+<h2>Context collapse：模型会把自己辛苦攒下的经验洗没</h2>
+<p>论文里最有记忆点的概念是 context collapse。很多自适应方法会让 LLM 每一轮重写完整 context，看起来很自然：旧经验加新经验，交给模型重新总结一下。但这恰恰是危险点。</p>
+<figure class="image-block"><img src="images/figure_02_p003.png" alt="Context collapse 案例：完整 context 从 18,282 tokens 突然坍缩到 122 tokens，准确率也从 66.7 掉到 57.1。" /><figcaption>Context collapse 案例：完整 context 从 18,282 tokens 突然坍缩到 122 tokens，准确率也从 66.7 掉到 57.1。</figcaption></figure>
+<p>Figure 2 展示了一个很刺眼的例子：AppWorld 中某一步 context 已经积累到 18,282 tokens，准确率 66.7；下一步被模型重写后只剩 122 tokens，准确率跌到 57.1，甚至低于不使用 context 的 63.7。这个现象不是小瑕疵，而是直接说明“让 LLM 整体重写记忆”很容易把长期经验洗成一段漂亮废话。</p>
+<p>这也是 ACE 的出发点：不要反复重写整本笔记，而是只追加和修订局部条目。经验可以增长，但不能一轮总结就消失。</p>
+<h2>ACE 的 playbook 不是口号，而是可执行的经验库</h2>
+<p>ACE 生成的 context 不是一段抽象说明，而是很像工程师会真的拿来查的手册：有 hard rules，有 code snippets，有 troubleshooting。它保留的是任务现场的细节，而不是把一切压成“be careful with APIs”这种空话。</p>
+<figure class="image-block"><img src="images/figure_03_p004.png" alt="ACE 在 AppWorld 上生成的 playbook 示例：包含策略、代码模板和故障排查规则。" /><figcaption>ACE 在 AppWorld 上生成的 playbook 示例：包含策略、代码模板和故障排查规则。</figcaption></figure>
+<p>Figure 3 很能说明 ACE 的味道。比如它会记录处理时间敏感交易时要从正确来源解析身份、用 datetime range 比较而不是字符串匹配；也会留下 <code>defaultdict(list)</code> 这样的代码模板；还会记录认证失败时应该按哪些顺序排查。这样的 context 更像“战术知识库”，而不是传统 prompt optimization 追求的短指令。</p>
+<p>这也是它和 GEPA、MIPROv2 一类方法的差别：ACE 不只是优化提示词表达，而是在积累任务执行经验。</p>
+<h2>三个角色分工：做题、反思、入库</h2>
+<p>ACE 的结构不复杂，反而是这篇论文比较聪明的地方。它把 context adaptation 拆成三个角色。</p>
+<figure class="image-block"><img src="images/figure_04_p005.png" alt="ACE 框架由 Generator、Reflector、Curator 组成，通过 delta context items 更新 Context Playbook。" /><figcaption>ACE 框架由 Generator、Reflector、Curator 组成，通过 delta context items 更新 Context Playbook。</figcaption></figure>
+<p>Generator 负责拿当前 playbook 去解题，产出 trajectory。Reflector 负责看这些轨迹，提取成功策略、失败原因和可复用 insight。Curator 负责把这些 insight 写成结构化 delta context items，再合并进 playbook。</p>
+<p>这个分工解决了两个问题。第一，Reflector 不需要同时承担生成答案和整理经验，反思质量更稳定。第二，Curator 不重写完整 context，而是做局部增量更新，避免 context collapse。</p>
+<p>论文还引入 grow-and-refine：新 bullet 可以追加，旧 bullet 可以更新计数，重复内容通过 embedding 去重。这样 context 能生长，但不会无限变成一堆重复条目。</p>
+<h2>在 AppWorld 上，ACE 不靠标签也能学到东西</h2>
+<p>Agent 任务最有意思，因为真实 Agent 往往没有标准答案标签，但会有执行反馈：代码跑没跑通、API 调用是否成功、环境状态有没有达到目标。ACE 正是利用这些自然信号来做 online adaptation。</p>
+<figure class="image-block"><img src="images/table_01_p007.png" alt="AppWorld 结果：ReAct + ACE 在 offline 和 online 适应中都显著超过 ICL、GEPA 和 Dynamic Cheatsheet。" /><figcaption>AppWorld 结果：ReAct + ACE 在 offline 和 online 适应中都显著超过 ICL、GEPA 和 Dynamic Cheatsheet。</figcaption></figure>
+<p>Table 1 显示，在 DeepSeek-V3.1-671B 作为 Base LLM 的 AppWorld 上，ReAct baseline 平均 42.4。Offline adaptation 中，ReAct + ACE 有 GT labels 时平均 59.4，没有 GT labels 时也有 57.2；Online adaptation 中，ReAct + ACE 无标签平均达到 59.5，高于 Dynamic Cheatsheet 的 51.9。</p>
+<p>这个结果非常重要：ACE 不是只能在训练集有标准答案时工作。对 Agent 来说，环境反馈本身就能成为反思信号。这让它更接近“自改进 Agent”的实际形态。</p>
+<p>论文还提到，ReAct + ACE 在 AppWorld leaderboard 上用 DeepSeek-V3.1 接近 GPT-4.1 驱动的生产级 Agent IBM CUGA 的整体平均表现，并在更难的 test-challenge split 上超过它的部分指标。这个说法需要谨慎看，因为作者也说明 IBM CUGA 只是上下文参照，不是严格同设置 baseline；但它确实说明 ACE 的收益不是小修小补。</p>
+<h2>金融任务证明：详细 context 对领域推理尤其有用</h2>
+<p>ACE 在金融 benchmark 上也很强。FiNER 要处理 XBRL 金融文档里的细粒度实体类型，Formula 要做金融概念和数值推理。这类任务很吃领域规则和常见陷阱，不是靠一句“think step by step”能解决的。</p>
+<figure class="image-block"><img src="images/table_02_p008.png" alt="金融分析结果：ACE 在 FiNER 和 Formula 上显著提升，尤其 Formula offline 从 67.5 提到 85.5。" /><figcaption>金融分析结果：ACE 在 FiNER 和 Formula 上显著提升，尤其 Formula offline 从 67.5 提到 85.5。</figcaption></figure>
+<p>Table 2 里，Base LLM 平均 69.1。Offline adaptation 中，ACE 有标签时平均 81.9，超过 GEPA 的 72.5；Formula 从 67.5 提到 85.5，提升 18.0。Online adaptation 有 GT labels 时，ACE 平均 76.6，也高于 DC 的 71.8。</p>
+<p>但这张表也暴露了 ACE 的边界：没有可靠反馈时，FiNER 上 ACE online 从 70.7 掉到 67.3，DC 也掉到 68.3。说明 context adaptation 不是魔法，如果反思信号本身不可靠，playbook 可能会被错误经验污染。论文在这里没有遮掩，这是一个加分点。</p>
+<h2>消融实验告诉我们：Reflector 和 warmup 都不是装饰</h2>
+<p>ACE 的消融实验主要看三个设计：Reflector 的迭代反思、多 epoch adaptation，以及 online 前的 offline warmup。</p>
+<figure class="image-block"><img src="images/table_03_p009.png" alt="消融实验：去掉 Reflector 或多 epoch 后 AppWorld 平均分下降；online 加 offline warmup 能把平均分从 56.1 提到 59.5。" /><figcaption>消融实验：去掉 Reflector 或多 epoch 后 AppWorld 平均分下降；online 加 offline warmup 能把平均分从 56.1 提到 59.5。</figcaption></figure>
+<p>Table 3 中，offline 完整 ACE 平均 59.4；去掉 Reflector 或 multi-epoch 后是 55.1，只去掉 multi-epoch 是 56.8。Online adaptation 中，ACE 平均 56.1，加 offline warmup 后到 59.5。</p>
+<p>这说明 ACE 的收益不只是“多塞一点 context”。更好的反思机制、更充分的多轮整理、以及上线前先用离线数据热启动，都会影响最终 playbook 的质量。</p>
+<h2>更长的 context 并不一定更贵，关键看怎么更新和复用</h2>
+<p>长 context 方法常被质疑：是不是效果上去了，但成本也爆了？ACE 的回答是，成本主要来自适应阶段，而它用 delta update 和非 LLM 合并来压低这个成本。</p>
+<figure class="image-block"><img src="images/table_04_p010.png" alt="成本与速度分析：ACE 相比 GEPA 和 DC 大幅降低 adaptation latency、rollouts 和 token cost。" /><figcaption>成本与速度分析：ACE 相比 GEPA 和 DC 大幅降低 adaptation latency、rollouts 和 token cost。</figcaption></figure>
+<p>Table 4 显示，在 AppWorld offline adaptation 上，ReAct + ACE 相比 ReAct + GEPA latency 从 53,898 秒降到 9,517 秒，减少 82.3%；rollouts 从 1,434 降到 357，减少 75.1%。FiNER online adaptation 中，ACE 相比 DC latency 从 65,104 秒降到 5,503 秒，减少 91.5%；token cost 从 17.7 美元降到 2.9 美元，减少 83.6%。</p>
+<p>论文还补充了一个部署层面的判断：ACE 的 raw input tokens 可能更长，但如果 playbook 被频繁复用，KV cache/prompt caching 会显著降低实际 billed cost。作者在 GPT-5.1 的 prompt-caching study 中报告，评估阶段 91.8% 的 input tokens 来自 cache，相比按 raw tokens 计费降低 82.6%。这个论证很现实，因为长 context 能不能落地，最后往往取决于服务系统能不能复用前缀。</p>
+<h2>我会如何读 ACE：它把 prompt 工程推向了“运行时知识管理”</h2>
+<p>我觉得 ACE 最有价值的地方，不是提出了一个复杂算法，而是把 context engineering 的目标重新摆正了。很多 prompt optimizer 追求的是“更好的指令”，ACE 追求的是“更好的经验组织”。这更接近 Agent 真正需要的东西。</p>
+<p>它也很适合和近期 Agent memory、Dynamic Cheatsheet、A-MEM 这类工作放在一起看。A-MEM 强调记忆条目的链接和演化，ACE 强调 context playbook 的增量更新与反思整理。两者共同指向一个趋势：未来的 Agent 不会只靠模型参数，也不会只靠一次性 RAG，而是会维护一套可解释、可编辑、可复用的运行时知识结构。</p>
+<p>不过 ACE 的风险也很清楚。它依赖 Reflector 的判断能力；如果 Reflector 从错误轨迹里提取了错误经验，Curator 再把它写进 playbook，系统可能会越学越偏。论文说 ACE 对弱 Reflector 和噪声有一定鲁棒性，但真正部署时，反馈信号的可信度、条目的过期机制、错误经验回滚，都会变成核心工程问题。</p>
+<p>所以我的判断是：ACE 不是“自动 prompt 优化”的终局，而是一个更可取的方向。它把自改进从一次性调 prompt，变成了长期维护一本任务攻略书。</p>
+<h2>值得关注的地方</h2>
+<ol>
+<li>反馈质量会决定 ACE 的上限。Agent 任务有执行成功/失败这种强信号，所以 ACE 很吃香；但开放式文本任务、主观判断任务、弱监督领域里，错误反馈会污染 playbook。后续值得研究如何给 insight 打置信度、来源和时效标签。</li>
+</ol>
+<ol>
+<li>Playbook 需要版本控制和回滚。ACE 让 context 可增长，但真实系统必须能回答“哪条经验导致性能下降”。把 delta context items 做成可审计版本树，可能比单纯追加 bullet 更重要。</li>
+</ol>
+<ol>
+<li>长 context 与检索式 context 可以结合。ACE 偏向维护一个丰富 playbook，但当条目很多时，不一定每次都全量塞入模型。后续可以探索 playbook 内部检索、分层摘要、任务路由和 KV cache 结合的系统设计。</li>
+</ol>
+<ol>
+<li>自改进 Agent 需要防止“过拟合环境”。AppWorld 和金融任务里的经验可复用性较强，但真实世界环境会变。ACE 需要机制区分稳定规则、临时 workaround 和已经过期的策略，否则 playbook 会变成一堆历史包袱。</li>
+</ol>
+            </section>
+
+            <footer class="footer">
+                <p class="footer-text">Generated by PaperPulse Lite</p>
+            </footer>
+
+        </article>
+    </main>
+
+    <script>
+        const content = document.getElementById('content');
+
+        const firstH1 = content.querySelector('h1');
+        if (firstH1) {
+            firstH1.style.display = 'none';
+        }
+
+        const tldrH2 = Array.from(content.querySelectorAll('h2')).find(h => h.textContent.toLowerCase().includes('tl;dr'));
+        if (tldrH2) {
+            let tldrText = '';
+            let nextEl = tldrH2.nextElementSibling;
+            while (nextEl && nextEl.tagName !== 'H2') {
+                if (nextEl.tagName === 'P') {
+                    tldrText += nextEl.textContent.trim() + ' ';
+                }
+                nextEl = nextEl.nextElementSibling;
+            }
+            if (tldrText) {
+                document.getElementById('tldr-content').textContent = tldrText.trim().substring(0, 350);
+            }
+        }
+
+        const paperLinksContainer = document.getElementById('paper-links');
+        const codeLinksContainer = document.getElementById('code-links');
+        const authorContainer = document.getElementById('paper-authors');
+        const keywordContainer = document.getElementById('paper-keywords');
+        let paperHtml = '';
+        let codeHtml = '';
+        let paperText = '';
+        let codeText = '';
+        let authorText = '';
+        let keywordText = '';
+        const paperUrls = new Set();
+        const codeUrls = new Set();
+
+        const escapeHtml = (value) => value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        const valueAfterLabel = (text, pattern) => {
+            const cleaned = text.replace(/\s+/g, ' ').trim();
+            const match = cleaned.match(pattern);
+            return match ? match[1].trim() : '';
+        };
+
+        const isPaperUrl = (url) => /arxiv\.org\/(abs|pdf)|doi\.org/i.test(url);
+        const isCodeUrl = (url) => /github\.com|gitlab\.com|huggingface\.co|modelscope\.cn|project|demo|github\.io/i.test(url);
+
+        const appendInfoLink = (kind, url, label) => {
+            const normalized = url.trim().replace(/[.,;，。；]+$/, '');
+            if (!normalized || !normalized.startsWith('http')) return;
+            const safeUrl = escapeHtml(normalized);
+            const safeLabel = escapeHtml((label || normalized).trim());
+            if (kind === 'code') {
+                if (codeUrls.has(normalized)) return;
+                codeUrls.add(normalized);
+                codeHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+                return;
+            }
+            if (paperUrls.has(normalized)) return;
+            paperUrls.add(normalized);
+            paperHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+        };
+
+        const addLinksFromElement = (el, target) => {
+            const links = el.querySelectorAll('a');
+            links.forEach(a => {
+                const url = a.getAttribute('href');
+                if (!url || !url.startsWith('http')) return;
+                const label = a.textContent.trim();
+                if (target === 'paper' && isPaperUrl(url)) appendInfoLink('paper', url, label);
+                else if (target === 'code' || isCodeUrl(url)) appendInfoLink('code', url, label);
+            });
+
+            if (!links.length) {
+                const urlMatches = el.textContent.match(/https?:\/\/[^\s)）]+/g);
+                if (urlMatches) {
+                    urlMatches.forEach(url => {
+                        if (target === 'paper' && isPaperUrl(url)) appendInfoLink('paper', url, url);
+                        else if (target === 'code' || isCodeUrl(url)) appendInfoLink('code', url, url);
+                    });
+                }
+            }
+        };
+
+        const nearbyMetadataElements = Array.from(content.querySelectorAll('p, li')).slice(0, 18);
+        nearbyMetadataElements.forEach(el => {
+            const text = el.textContent.trim();
+            const lower = text.toLowerCase();
+            addLinksFromElement(el, lower.includes('代码') || lower.includes('code') ? 'code' : 'paper');
+            if (!paperText && /论文链接|paper|arxiv|doi/i.test(text)) {
+                paperText = valueAfterLabel(text, /(?:论文链接|Paper|paper|arXiv|arxiv|DOI|doi)[:：]\s*(.+)$/i);
+            }
+            if (!codeText && /代码链接|code|github|repo/i.test(text)) {
+                codeText = valueAfterLabel(text, /(?:代码链接|Code|code|GitHub|github|Repo|repo)[:：]\s*(.+)$/i);
+            }
+            if (!authorText && /作者|团队|机构|authors?|affiliations?/i.test(text)) {
+                authorText = text.replace(/^(作者团队|作者|团队|机构|Authors?|Affiliations?)[:：]\s*/i, '').trim();
+            }
+            if (!keywordText && /关键词|keywords?/i.test(text)) {
+                keywordText = text.replace(/^(关键词|Keywords?)[:：]\s*/i, '').trim();
+            }
+        });
+
+        const headings = content.querySelectorAll('h2');
+        let infoH2 = null;
+        headings.forEach(h => {
+            if (h.textContent.includes('论文基本信息') || h.textContent.includes('论文信息') || h.textContent.includes('论文链接') || h.textContent.toLowerCase().includes('info')) {
+                infoH2 = h;
+            }
+        });
+
+        if (infoH2) {
+            let current = infoH2.nextElementSibling;
+            while (current && current.tagName !== 'H2') {
+                current.style.display = 'none';
+                current = current.nextElementSibling;
+            }
+
+            const codeH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('代码'));
+            const paperH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('论文链接'));
+
+            if (paperH3) {
+                let el = paperH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'paper');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (codeH3) {
+                let el = codeH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'code');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (!paperHtml && !codeHtml) {
+                const allLinks = content.querySelectorAll('a');
+                allLinks.forEach(a => {
+                    const url = a.getAttribute('href') || '';
+                    const label = a.textContent.trim();
+                    if (url.startsWith('http')) {
+                        if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+                        else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+                    }
+                });
+            }
+
+            const authorH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('作者'));
+            if (authorH) {
+                const nextEl = authorH.nextElementSibling;
+                if (nextEl) {
+                    const authorLis = nextEl.querySelectorAll('li');
+                    if (authorLis.length > 0) {
+                        const authors = Array.from(authorLis).map(li => li.textContent.trim()).slice(0, 3);
+                        authorText = authors.join(', ');
+                    } else {
+                        const rawText = nextEl.textContent.trim();
+                        const parts = rawText.split(/[,，;；\n]/);
+                        const top3 = parts.slice(0, 3).join(', ');
+                        authorText = top3;
+                    }
+                }
+            }
+
+            const keywordH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('关键词'));
+            if (keywordH) {
+                const nextEl = keywordH.nextElementSibling;
+                if (nextEl) {
+                    const keywordLis = nextEl.querySelectorAll('li');
+                    if (keywordLis.length > 0) {
+                        keywordText = Array.from(keywordLis).map(li => li.textContent.trim()).join(', ');
+                    } else {
+                        keywordText = nextEl.textContent.trim();
+                    }
+                }
+            }
+        }
+
+        if (paperHtml) paperLinksContainer.innerHTML = paperHtml;
+        else if (paperText) paperLinksContainer.innerHTML = escapeHtml(paperText);
+        if (codeHtml) codeLinksContainer.innerHTML = codeHtml;
+        else if (codeText) codeLinksContainer.innerHTML = escapeHtml(codeText);
+        if (authorText) authorContainer.textContent = authorText.substring(0, 180);
+        if (keywordText) keywordContainer.textContent = keywordText.substring(0, 180);
+
+        const spotlightRules = [
+            {
+                className: 'commentary-block',
+                label: 'Reading Note',
+                patterns: ['我会如何读', '我怎么看', '我的看法', '点评', '评价', '边界', '值得警惕', '冷静话', '读这篇论文']
+            },
+            {
+                className: 'research-block',
+                label: 'Tiny Sparks',
+                patterns: ['值得关注', '研究方向', '后续研究', '未来方向', '延伸思考', '开放问题', '接下来值得追', '值得追的问题', '之后可以', '思考']
+            }
+        ];
+
+        const wrapSection = (heading, rule) => {
+            if (heading.closest('.spotlight-section')) return;
+            const wrapper = document.createElement('section');
+            wrapper.className = `spotlight-section ${rule.className}`;
+            wrapper.dataset.label = rule.label;
+            heading.parentNode.insertBefore(wrapper, heading);
+            wrapper.appendChild(heading);
+            let next = wrapper.nextSibling;
+            while (next) {
+                const current = next;
+                next = next.nextSibling;
+                if (current.nodeType === Node.ELEMENT_NODE && current.tagName === 'H2') break;
+                wrapper.appendChild(current);
+            }
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            const text = h.textContent.trim();
+            const matched = spotlightRules.find(rule => rule.patterns.some(pattern => text.includes(pattern)));
+            if (matched && h.style.display !== 'none') {
+                wrapSection(h, matched);
+            }
+        });
+
+        const headingEmojiRules = [
+            { emoji: '⚡', patterns: ['tl;dr'] },
+            { emoji: '📌', patterns: ['论文基本信息', '论文信息'] },
+            { emoji: '🧩', patterns: ['不是', '问题', '现场', '痛点', '为什么', '背景'] },
+            { emoji: '🛠️', patterns: ['方法', '框架', '构建', '流程', '数据从哪里来', '系统', '模型'] },
+            { emoji: '📊', patterns: ['结果', '实验', '评测', 'benchmark', '指标', '解决率'] },
+            { emoji: '🔍', patterns: ['分析', '检索', '上下文', '错误', '案例', '失败'] },
+            { emoji: '💬', patterns: ['我会如何读', '我怎么看', '点评', '边界', '评价'] },
+            { emoji: '🌱', patterns: ['值得关注', '研究方向', '后续', '未来', '思考', '开放问题'] }
+        ];
+
+        const emojiForHeading = (heading) => {
+            const text = heading.textContent.trim().toLowerCase();
+            const matched = headingEmojiRules.find(rule => rule.patterns.some(pattern => text.includes(pattern.toLowerCase())));
+            return matched ? matched.emoji : '✦';
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            if (h.style.display === 'none' || h.dataset.emojiAdded === 'true') return;
+            const emoji = document.createElement('span');
+            emoji.className = 'heading-emoji';
+            emoji.setAttribute('aria-hidden', 'true');
+            emoji.textContent = emojiForHeading(h);
+            h.prepend(emoji);
+            h.dataset.emojiAdded = 'true';
+        });
+
+        const tocList = document.getElementById('toc-list');
+        const heroSection = document.querySelector('section.mb-6');
+        if (heroSection) {
+            heroSection.id = 'brief';
+            const briefLi = document.createElement('li');
+            const briefA = document.createElement('a');
+            briefA.href = '#brief';
+            briefA.textContent = 'Brief';
+            briefA.className = 'toc-link';
+            briefLi.appendChild(briefA);
+            tocList.appendChild(briefLi);
+        }
+
+        const allHeadings = content.querySelectorAll('h2, h3');
+        const exclude = ['tl;dr', '论文基本信息', '论文信息', '论文链接', '代码链接', '作者团队', '关键词'];
+
+        allHeadings.forEach((h, i) => {
+            const text = h.textContent.toLowerCase();
+            if (h.style.display === 'none') return;
+            if (exclude.some(e => text.includes(e.toLowerCase()))) {
+                h.style.display = 'none';
+                let current = h.nextElementSibling;
+                while (current && current.tagName !== 'H2') {
+                    current.style.display = 'none';
+                    current = current.nextElementSibling;
+                }
+                return;
+            }
+
+            const id = `s-${i}`;
+            h.id = id;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#${id}`;
+            a.textContent = h.textContent;
+            a.className = `toc-link ${h.tagName === 'H3' ? 'h3' : ''}`;
+            li.appendChild(a);
+            tocList.appendChild(li);
+        });
+
+        const tocLinks = tocList.querySelectorAll('.toc-link');
+        const highlight = () => {
+            let current = null;
+            if (heroSection && heroSection.getBoundingClientRect().top > -50) {
+                current = 'brief';
+            }
+            allHeadings.forEach(h => {
+                if (h.id && h.getBoundingClientRect().top <= 100) current = h.id;
+            });
+            tocLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+            });
+        };
+        window.addEventListener('scroll', highlight, { passive: true });
+        highlight();
+    </script>
+</body>
+</html>

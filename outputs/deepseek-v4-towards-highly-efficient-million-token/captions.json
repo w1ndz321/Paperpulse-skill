@@ -1,0 +1,191 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/DeepSeek_V4.pdf",
+  "title": "DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence",
+  "slug": "deepseek-v4-towards-highly-efficient-million-token",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "code": [
+      "https://huggingface.co/collections/deepseek-ai/deepseek-v4"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p001",
+      "kind": "figure",
+      "page": 1,
+      "image": "images/figure_01_p001.png",
+      "caption": "Figure 1 | Left: benchmark performance of DeepSeek-V4-Pro-Max and its counterparts. Right: inference FLOPs and KV cache size of DeepSeek-V4 series and DeepSeek-V3.2.",
+      "nearby_text": "1.2 DeepSeek-V3.2 DeepSeek-V4-Pro DeepSeek-V4-Flash Single-Token FLOPs (T) 1.0 DeepSeek-V4-Pro-Max Claude-Opus-4.6-Max GPT-5.4-xHigh Gemini-3.1-Pro-High 0.8 100 3.7× lower 32063168 90.2 89.1 0.6 3052 85.9 9.8× lower 80.680.880.6 80 78.1 0.4 75.6 75.1 Accuracy / Pass@1 (%) 68.5 67.9 65.4 0.2 60 57.9 54.6 0.0 51.8 0 256 512 768 1024 Token Position (K) 48.8 47.2 46.245.3 44.4 40.039.8 40 37.7 50 Accumulated KV Cache (GB) DeepSeek-V3.2 DeepSeek-V4-Pro DeepSeek-V4-Flash 40 20 30 9.5× smaller 0 SimpleQA HLE Apex Shortlist Codeforces SWE Verified Terminal Bench 2.0 Toolathlon Verified 20 (Pass@1) (Pass@1) (Rating) 13.7× smaller (Pass@1) (Pass@1) (Acc) (Resolved) 10 Knowledge & Reasoning Agentic Cap"
+    },
+    {
+      "id": "figure_02_p006",
+      "kind": "figure",
+      "page": 6,
+      "image": "images/figure_02_p006.png",
+      "caption": "Figure 2 | Overall architecture of DeepSeek-V4 series. We use hybrid CSA (Compressed Sparse Attention) and HCA (Heavily Compressed Attention) for attention layers, DeepSeekMoE for feed-forward layers, and strengthen conventional residual connections with mHC.",
+      "nearby_text": "Transformer Block ×𝐿𝐿 Post-Block Mixing DeepSeekMoE Residual Mixing Pre-Block Mixing Post-Block Mixing CSA / HCA Residual Mixing Pre-Block Mixing Embedding Input Tokens Figure 2 | Overall architecture of DeepSeek-V4 series. We use hybrid CSA (Compressed Sparse Attention) and HCA (Heavily Compressed Attention) for attention layers, DeepSeekMoE for feed-forward layers, and strengthen conventional residual connections with mHC. performance to GPT-5.2 and Gemini-3.0-Pro, establishing itself as a highly cost-effective architecture for complex reasoning tasks. • Agent: On public benchmarks, DeepSeek-V4-Pro-Max is on par with leading open-source models, such as Kimi-K2.6 and GLM-5.1, but slightly w"
+    },
+    {
+      "id": "figure_03_p009",
+      "kind": "figure",
+      "page": 9,
+      "image": "images/figure_03_p009.png",
+      "caption": "Figure 3 | Core architectures of CSA. It compresses the number of KV entries to 1",
+      "nearby_text": "Shared Key-Value Multi-Query Attention Concatenation Lightning Indexer Selected Compressed KV Entries Sliding Window KV Entries … Index Scores Multi-Query Attention Top-k Selector … … Compressed Indexer Keys Compressed KV Entries … Indexer Queries Queries Token-Level Compressor Token-Level Compressor Hidden State of Query Token … Hidden States of KV Tokens Figure 3 | Core architectures of CSA. It compresses the number of KV entries to 1 𝑚times, and then applies DeepSeek Sparse Attention for further acceleration. Additionally, a small set of sliding window KV entries is combined with the selected compressed KV entries to enhance local fine-grained dependencies. 2.3. Hybrid Attention with CSA "
+    },
+    {
+      "id": "figure_04_p011",
+      "kind": "figure",
+      "page": 11,
+      "image": "images/figure_04_p011.png",
+      "caption": "Figure 4 | Core architectures of HCA. It performs heavier compression, where the KV entries of 𝑚′ (≫𝑚) tokens will be consolidated into one. Also, we additionally introduce a small set of sliding window KV entries to enhance local fine-grained dependencies.",
+      "nearby_text": "Shared Key-Value Multi-Query Attention Concatenation Sliding Window KV Entries Heavily Compressed KV Entries … Queries Token-Level Compressor … Hidden State of Query Token Hidden States of KV Tokens Figure 4 | Core architectures of HCA. It performs heavier compression, where the KV entries of 𝑚′ (≫𝑚) tokens will be consolidated into one. Also, we additionally introduce a small set of sliding window KV entries to enhance local fine-grained dependencies. Shared Key-Value MQA. After selecting the sparse KV entries, CSA then performs core attention in a Multi-Query Attention (MQA) (Shazeer, 2019) manner, where each compressed KV entry in CSprsComp 𝑡 serves as both attention key and value. To be "
+    },
+    {
+      "id": "figure_05_p015",
+      "kind": "figure",
+      "page": 15,
+      "image": "images/figure_05_p015.png",
+      "caption": "Figure 5 | Illustration of our EP scheme with related works. Comet (Zhang et al., 2025b) overlaps Dispatch with Linear-1, and Linear-2 with Combine, separately. Our EP scheme achieves a finer- grained overlapping by splitting and scheduling experts into waves. The theoretical speedup is evaluated in the configuration of the DeepSeek-V4-Flash architecture.",
+      "nearby_text": "(a) Naive Solution L1 Act L2 (b) Comet Communication Theoretical speedup: 1.42× Computation L1 Act L2 (c) Ours Dispatch Dispatch All-to-All Linear 1 GEMM SwiGLU + FP8 Cast Linear 2 GEMM Combine All-to-All Theoretical speedup: 1.92× L1 L2 L1 L2 L1 L2 Computation Activation & Combine Act Act Act Expert Wave 1 Expert Wave 2 Expert Wave 3 Figure 5 | Illustration of our EP scheme with related works. Comet (Zhang et al., 2025b) overlaps Dispatch with Linear-1, and Linear-2 with Combine, separately. Our EP scheme achieves a finer- grained overlapping by splitting and scheduling experts into waves. The theoretical speedup is evaluated in the configuration of the DeepSeek-V4-Flash architecture. Fine-"
+    },
+    {
+      "id": "figure_06_p023",
+      "kind": "figure",
+      "page": 23,
+      "image": "images/figure_06_p023.png",
+      "caption": "Figure 6 | Illustration of the KV cache Layout for DeepSeek-V4. The KV cache is organized into two primary components: a classical KV cache for CSA/HCA, and a state cache for SWA and unready-for-compression tokens in CSA/HCA. In the state cache, each request is assigned a fixed-size cache block. Within this block, the SWA segment stores the KV entries corresponding to the most recent 𝑛win tokens, while the CSA/HCA segment stores uncompressed tail states that are not yet ready for compression. In the classical KV cache, we allocate multiple blocks per request. Each cache block covers lcm(𝑚, 𝑚′) original tokens, producing 𝑘1 = lcm(𝑚,𝑚′)",
+      "nearby_text": "State Cache KV Cache Uncompressed CSA KV Request 1 SWA KV Block 0 KV State HCA KV Uncompressed CSA KV CSA Indexer KV CSA Main KV Layer-2 Request 2 SWA KV Block 1 of k1 tokens of k1 tokens KV State HCA KV Layer-3 Uncompressed HCA KV of k2 tokens CSA KV Request 3 SWA KV Layer-0 SWA KV Layer-2 CSA State Block 2 KV State HCA KV CSA Indexer KV CSA Main KV Layer-4 of k1 tokens of k1 tokens Uncompressed … CSA KV Layer-3 HCA State SWA KV …… …… Layer-5 KV State HCA KV of k2 tokens HCA KV … ... ... Layer-n SWA KV Uncompressed CSA KV Request R SWA KV Block N KV State HCA KV Figure 6 | Illustration of the KV cache Layout for DeepSeek-V4. The KV cache is organized into two primary components: a classical"
+    },
+    {
+      "id": "table_01_p028",
+      "kind": "table",
+      "page": 28,
+      "image": "images/table_01_p028.png",
+      "caption": "Table 1 | Comparison among DeepSeek-V3.2-Base, DeepSeek-V4-Flash-Base, and DeepSeek-V4- Pro-Base. All models are evaluated in our internal framework and share the same evaluation setting. Scores with a gap not exceeding 0.3 are considered to be at the same level. The highest score in each row is in bold font, and the second is underlined.",
+      "nearby_text": "Table 1 | Comparison among DeepSeek-V3.2-Base, DeepSeek-V4-Flash-Base, and DeepSeek-V4- Pro-Base. All models are evaluated in our internal framework and share the same evaluation setting. Scores with a gap not exceeding 0.3 are considered to be at the same level. The highest score in each row is in bold font, and the second is underlined. Benchmark (Metric) # Shots DeepSeek-V3.2 DeepSeek-V4-Flash DeepSeek-V4-Pro Base Base Base Architecture - MoE MoE MoE # Activated Params - 37B 13B 49B # Total Params - 671B 284B 1.6T AGIEval (EM) 0-shot 80.1 82.6 83.1 MMLU (EM) 5-shot 87.8 88.7 90.1 MMLU-Redux (EM) 5-shot 87.5 89.4 90.8 MMLU-Pro (EM) 5-shot 65.5 68.3 73.5 MMMLU (EM) 5-shot 87.9 88.8 90.3 C-E"
+    },
+    {
+      "id": "table_02_p030",
+      "kind": "table",
+      "page": 30,
+      "image": "images/table_02_p030.png",
+      "caption": "Table 2 | Comparison of three reasoning modes",
+      "nearby_text": "Table 2 | Comparison of three reasoning modes Reasoning Mode Characteristics Typical Use Cases Response Format Non-think Fast, intuitive re- sponses based on habits or simple rules. Think High Conscious logical analysis, slower but more accurate. Think Max Push reasoning to its fullest extent. Slow but powerful. Table 3 | Instruction injected into the system prompt for the \"Think Max\" mode."
+    },
+    {
+      "id": "table_03_p030",
+      "kind": "table",
+      "page": 30,
+      "image": "images/table_03_p030.png",
+      "caption": "Table 3 | Instruction injected into the system prompt for the \"Think Max\" mode.",
+      "nearby_text": "Table 2 | Comparison of three reasoning modes Reasoning Mode Characteristics Typical Use Cases Response Format Non-think Fast, intuitive re- sponses based on habits or simple rules. Routine daily tasks, emergency reactions, low-risk decisions. </think> summary Think High Conscious logical analysis, slower but more accurate. Complex problem- solving, planning, medium-risk deci- sions. <think> thinking tokens </think> summary Think Max Push reasoning to its fullest extent. Slow but powerful. Exploring the bound- ary of model reason- ing capability. 1. A special system prompt at the begin- ning. 2. <think> thinking tokens </think> summary Table 3 | Instruction injected into the system prompt fo"
+    },
+    {
+      "id": "table_04_p031",
+      "kind": "table",
+      "page": 31,
+      "image": "images/table_04_p031.png",
+      "caption": "Table 4 | Tool-call schema for DeepSeek-V4 series.",
+      "nearby_text": "Table 4 | Tool-call schema for DeepSeek-V4 series. Tool Call Schema ## Tools"
+    },
+    {
+      "id": "figure_07_p032",
+      "kind": "figure",
+      "page": 32,
+      "image": "images/figure_07_p032.png",
+      "caption": "Figure 7 | Thinking management of DeepSeek-V4 series.",
+      "nearby_text": "a) Thinking with tools b) Thinking without tools Figure 7 | Thinking management of DeepSeek-V4 series. Quick Instruction. In chatbot scenarios, a number of auxiliary tasks (e.g., determining whether to trigger a web search, intent recognition, etc.) must be executed before generating the response. Conventionally, these tasks are handled by a separate small model, requiring redundant prefill- ing since it cannot reuse the existing KV cache. To overcome this limitation, we introduce Quick Instruction. We append a set of dedicated special tokens directly to the input sequence, where each token corresponds to a specific auxiliary task. By directly reusing the already-computed KV cache, this mech"
+    },
+    {
+      "id": "table_05_p033",
+      "kind": "table",
+      "page": 33,
+      "image": "images/table_05_p033.png",
+      "caption": "Table 5 | Quick Instruction special tokens for auxiliary tasks.",
+      "nearby_text": "Table 5 | Quick Instruction special tokens for auxiliary tasks. Special Token Description Format <|action|> Determines whether the user prompt requires a web search or can be answered directly. ...<|User|>{prompt}<|Assistant|> <think><|action|> <|title|> Generates a concise conversa- tion title after the first assis- tant response. ...<|Assistant|>{response} <|end_of_sentence|><|title|> <|query|> Generates search queries for the user prompt. ...<|User|>{prompt}<|query|> <|authority|> Classifies the user prompt’s demand for source authorita- tiveness. ...<|User|>{prompt}<|authority|> <|domain|> Identifies the domain of the user prompt. ...<|User|>{prompt}<|domain|> <|extracted_url|> <|read_ur"
+    },
+    {
+      "id": "table_06_p038",
+      "kind": "table",
+      "page": 38,
+      "image": "images/table_06_p038.png",
+      "caption": "Table 6 | Comparison between DeepSeek-V4-Pro-Max and closed/open source models. \"Max\", \"xHigh\", and \"High\" denote reasoning effort. The best results are highlighted in bold; the second-best results are underlined.",
+      "nearby_text": "5.3.2. Evaluation Results Table 6 | Comparison between DeepSeek-V4-Pro-Max and closed/open source models. \"Max\", \"xHigh\", and \"High\" denote reasoning effort. The best results are highlighted in bold; the second-best results are underlined. Benchmark (Metric) Opus-4.6 GPT-5.4 Gemini-3.1-Pro K2.6 GLM-5.1 DS-V4-Pro Max xHigh High Thinking Thinking Max MMLU-Pro (EM) 89.1 87.5 91.0 87.1 86.0 87.5 SimpleQA-Verified (Pass@1) 46.2 45.3 75.6 36.9 38.1 57.9 Chinese-SimpleQA (Pass@1) 76.4 76.8 85.9 75.9 75.0 84.4 GPQA Diamond (Pass@1) 91.3 93.0 94.3 90.5 86.2 90.1 HLE (Pass@1) 40.0 39.8 44.4 36.4 34.7 37.7 LiveCodeBench (Pass@1) 88.8 - 91.7 89.6 - 93.5 Codeforces (Rating) - 3168 3052 - - 3206 HMMT 2026"
+    },
+    {
+      "id": "table_07_p039",
+      "kind": "table",
+      "page": 39,
+      "image": "images/table_07_p039.png",
+      "caption": "Table 7 | Comparison among different sizes and modes of DeepSeek-V4 series. \"Non-Think\", \"High\", and \"Max\" denote reasoning effort.",
+      "nearby_text": "Table 7 | Comparison among different sizes and modes of DeepSeek-V4 series. \"Non-Think\", \"High\", and \"Max\" denote reasoning effort. Benchmark (Metric) DeepSeek-V4-Flash DeepSeek-V4-Pro Non-Think High Max Non-Think High Max MMLU-Pro (EM) 83.0 86.4 86.2 82.9 87.1 87.5 SimpleQA-Verified (Pass@1) 23.1 28.9 34.1 45.0 46.2 57.9 Chinese-SimpleQA (Pass@1) 71.5 73.2 78.9 75.8 77.7 84.4 GPQA Diamond (Pass@1) 71.2 87.4 88.1 72.9 89.1 90.1 HLE (Pass@1) 8.1 29.4 34.8 7.7 34.5 37.7 LiveCodeBench (Pass@1-COT) 55.2 88.4 91.6 56.8 89.8 93.5 Codeforces (Rating) - 2816 3052 - 2919 3206 HMMT 2026 Feb (Pass@1) 40.8 91.9 94.8 31.7 94.0 95.2 IMOAnswerBench (Pass@1) 41.9 85.1 88.4 35.3 88.0 89.8 Apex (Pass@1) 1.0 1"
+    },
+    {
+      "id": "figure_08_p040",
+      "kind": "figure",
+      "page": 40,
+      "image": "images/figure_08_p040.png",
+      "caption": "Figure 8 | Formal reasoning under practical and frontier regimes. Left: Putnam-200 Pass@8 evaluates a fixed random subset of PutnamBench (Tsoukalas et al., 2024) following the setup introduced by Seed-Prover; all models are tested on the same problem set. We follow the Seed- Prover protocol but replace proprietary search tools with the open-source LeanExplore (Asher, 2025), yielding a lightweight setting with minimal agent tools and bounded sampling. Right: Putnam-2025 probes the frontier of mathematical reasoning in a scaled hybrid formal-informal regime, where informal reasoning is combined with formal verification to expose gaps and improve rigor; DeepSeek-V4 reaches a proof-perfect 120/120.",
+      "nearby_text": "Frontier Regime Putnam-2025 with hybrid formal-informal reasoning and substantial compute scaling. Practical Regime Putnam-200 Pass@8 with minimal tools and bounded sampling. Aristotle 100/120 Seed-1.5-Prover 26.50 Seed-1.5-Prover 110/120 Gemini-3-Pro 26.50 Axiom 120/120 Seed-2.0-Pro 35.50 DeepSeek-V4 120/120 DeepSeek-V4-Flash-Max 81.00 Figure 8 | Formal reasoning under practical and frontier regimes. Left: Putnam-200 Pass@8 evaluates a fixed random subset of PutnamBench (Tsoukalas et al., 2024) following the setup introduced by Seed-Prover; all models are tested on the same problem set. We follow the Seed- Prover protocol but replace proprietary search tools with the open-source LeanExplore"
+    },
+    {
+      "id": "figure_09_p040",
+      "kind": "figure",
+      "page": 40,
+      "image": "images/figure_09_p040.png",
+      "caption": "Figure 9 | DeepSeek-V4 series performance on the MRCR task.",
+      "nearby_text": "Figure 8 | Formal reasoning under practical and frontier regimes. Left: Putnam-200 Pass@8 evaluates a fixed random subset of PutnamBench (Tsoukalas et al., 2024) following the setup introduced by Seed-Prover; all models are tested on the same problem set. We follow the Seed- Prover protocol but replace proprietary search tools with the open-source LeanExplore (Asher, 2025), yielding a lightweight setting with minimal agent tools and bounded sampling. Right: Putnam-2025 probes the frontier of mathematical reasoning in a scaled hybrid formal-informal regime, where informal reasoning is combined with formal verification to expose gaps and improve rigor; DeepSeek-V4 reaches a proof-perfect 120/1"
+    },
+    {
+      "id": "figure_10_p041",
+      "kind": "figure",
+      "page": 41,
+      "image": "images/figure_10_p041.png",
+      "caption": "Figure 10 | HLE and Terminal Bench 2.0 performance by reasoning effort. “None” indicates Non-think mode, and “Speciale” indicates DeepSeek-V3.2-Speciale model.",
+      "nearby_text": "HLE TerminalBench 2.0 Max 40 Max 70 High High 35 Max None 60 Speciale 30 Pass@1 (%) Pass@1 (%) High Think High Max 25 50 Think None 20 15 40 DeepSeek-V4-Pro DeepSeek-V4-Flash DeepSeek-V3.2 DeepSeek-V4-Pro DeepSeek-V4-Flash DeepSeek-V3.2 10 None None None None 30 5 0 20k 40k 60k 80k Total Tokens 20k 30k 40k 50k Total Tokens Figure 10 | HLE and Terminal Bench 2.0 performance by reasoning effort. “None” indicates Non-think mode, and “Speciale” indicates DeepSeek-V3.2-Speciale model. DeepSeek-V3.2. 5.4. Performance on Real-World Tasks Standardized benchmarks often struggle to capture the complexities of diverse, real-world tasks, creating a gap between test results and actual user experience. To"
+    },
+    {
+      "id": "table_08_p041",
+      "kind": "table",
+      "page": 41,
+      "image": "images/table_08_p041.png",
+      "caption": "Table 13 presents the creative writing comparison, which is evaluated along two axes: instruction following and writing quality. Compared with Gemini-3.1-Pro, DeepSeek-V4-Pro achieves a 60.0% win rate in instruction following and 77.5% in writing quality, demonstrating a marginal improvement in instruction following and a substantial gain in writing quality. Although DeepSeek-V4-Pro yields superior results in aggregate user case analysis, an evaluation restricted to the most challenging prompts — specifically those involving high-complexity constraints or multi-turn scenarios — reveals that Claude Opus 4.5 retains a performance advantage over DeepSeek-V4-Pro. As shown in Table 14, Claude Opus 4.5 achieves a 52.0% win rate versus 45.9%.",
+      "nearby_text": "Standardized benchmarks often struggle to capture the complexities of diverse, real-world tasks, creating a gap between test results and actual user experience. To bridge this, we have developed proprietary internal metrics that prioritize real-world usage patterns over traditional benchmarks. This approach ensures that our optimizations translate into tangible benefits. Our evaluation framework specifically targets the primary use cases of the DeepSeek API and Chatbot, aligning model performance with practical demands. 5.4.1. Chinese Writing One of the primary use cases for DeepSeek is Chinese writing. We conducted a rigorous evaluation on functional writing and creative writing. Table 12 p"
+    },
+    {
+      "id": "figure_11_p043",
+      "kind": "figure",
+      "page": 43,
+      "image": "images/figure_11_p043.png",
+      "caption": "Figure 11 | Win-rate comparison across analy- sis, generation, editing tasks, and the overall performance.",
+      "nearby_text": "Win Rate: DeepSeek-V4-Pro-Max vs Opus-4.6-Max 55.0% 8.0% 37.0% analysis 52.0% 10.0% 38.0% generation 47.0% 18.0% 35.0% editing 53.0% 10.0% 37.0% overall 0% 20% 40% 60% 80% 100% Proportion Win Tie Lose Figure 11 | Win-rate comparison across analy- sis, generation, editing tasks, and the overall performance."
+    },
+    {
+      "id": "figure_12_p043",
+      "kind": "figure",
+      "page": 43,
+      "image": "images/figure_12_p043.png",
+      "caption": "Figure 12 | Detailed dimension scores includ- ing Task Completion, Content Quality, Format- ting Aesthetics, and Instruction Following.",
+      "nearby_text": "Content Quality. Specifically, DeepSeek-V4-Pro-Max proactively anticipates implicit user in- tents by frequently providing supplementary insights and self-verification steps. It also excels in long-form generation, delivering in-depth, coherent narratives rather than relying on the overly simplistic bullet points frequently produced by Opus-4.6-Max. Additionally, the model strictly conforms to formal professional conventions, such as standardized Chinese hierarchical numbering. However, in terms of Instruction Following, it occasionally overlooks specific formatting constraints and slightly trails Opus. Furthermore, the model is less proficient at condensing extensive text inputs into succin"
+    },
+    {
+      "id": "figure_13_p043",
+      "kind": "figure",
+      "page": 43,
+      "image": "images/figure_13_p043.png",
+      "caption": "Figure 13 | Example output of a task which requires drafting a joint marketing proposal for a popular bubble tea brand and the Beijing Subway.",
+      "nearby_text": "Figure 13 | Example output of a task which requires drafting a joint marketing proposal for a popular bubble tea brand and the Beijing Subway. 43"
+    },
+    {
+      "id": "table_09_p044",
+      "kind": "table",
+      "page": 44,
+      "image": "images/table_09_p044.png",
+      "caption": "Table 8 | Comparison on R&D Coding Benchmark (external models included strictly for evalua- tion purposes).",
+      "nearby_text": "5.4.4. Code Agent To benchmark our coding agent capability, we curate tasks from real internal R&D workloads We collect ∼200 challenging tasks from 50+ internal engineers, spanning feature development, bug fixing, refactoring, and diagnostics across diverse technology stacks including PyTorch, CUDA, Rust, and C++. Each task is accompanied by its original repository, the corresponding execution environment, and human-annotated scoring rubrics; after rigorous quality filtering, 30 tasks are retained as the evaluation set. As shown in Table 8, DeepSeek-V4-Pro significantly outperforms Claude Sonnet 4.5 and approaches the level of Claude Opus 4.5. Table 8 | Comparison on R&D Coding Benchmark (ex"
+    }
+  ]
+}

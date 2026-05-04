@@ -1,0 +1,82 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/malmas.pdf",
+  "title": "Memory-Augmented LLM-based Multi-Agent System for Automated Feature Generation on Tabular Data",
+  "slug": "memory-augmented-llm-based-multi-agent-system-automated",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "paper": [
+      "https://arxiv.org/abs/2604.20261v1"
+    ],
+    "code": [
+      "https://github.com/fxdong24/MALMAS"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p001",
+      "kind": "figure",
+      "page": 1,
+      "image": "images/figure_01_p001.png",
+      "caption": "Figure 1: Comparison of traditional, LLM-based, and multi-agent feature generation approaches.",
+      "nearby_text": "1University of Science and Technology of China 2Zhejiang University of Technology, 3Meituan {fengxiandong, chenweicw, chenyong1997}@mail.ustc.edu.cn {zhengzhi97, tongxu, cheneh}@ustc.edu.cn hahahenha@gmail.com, ruanjingqing2019@ia.ac.cn (c) (a) Restricted feature space fusion feature non-semantic multi-agent feature new features feedback fixed operation sets expanded generation space (b) Lack of task feedback feature1 feature2 feature3 new features rigid thinking Z new features summary feature agent single agent abstract summary no feedback Figure 1: Comparison of traditional, LLM-based, and multi-agent feature generation approaches. However, traditional automated feature genera- tion method"
+    },
+    {
+      "id": "figure_02_p004",
+      "kind": "figure",
+      "page": 4,
+      "image": "images/figure_02_p004.png",
+      "caption": "Figure 2: Overview of the proposed MALMAS framework. (A) Agents construct prompts from metadata, selected features, and memory. (B) Agents generate and evaluate candidate features with a downstream model. (C) Agent memories are summarized into a global memory to guide subsequent rounds.",
+      "nearby_text": "Figure 2: Overview of the proposed MALMAS framework. (A) Agents construct prompts from metadata, selected features, and memory. (B) Agents generate and evaluate candidate features with a downstream model. (C) Agent memories are summarized into a global memory to guide subsequent rounds. subset Ti aligned with its objective: turning expensive feedback into reusable guidance. Formally, at iteration r, each agent Ai main- tains an explicit, structured memory state M(r) i = {ProcMem(r) i , FeedMem(r) i , ConMem(r) i }. At the beginning of round r, the agent retrieves its local memories together with the shared GlobalMem(r−1) to condition prompt construction; after feature evaluation, it appends "
+    },
+    {
+      "id": "table_01_p006",
+      "kind": "table",
+      "page": 6,
+      "image": "images/table_01_p006.png",
+      "caption": "Table 1: Performance (AUC) of all methods on 16 classification datasets. Best results are in bold, second-best are underlined. Results are averaged across three random train-test splits using the XGBoost classifier. “N/A” indicates that the running time exceeded 12 hours.",
+      "nearby_text": "Table 1: Performance (AUC) of all methods on 16 classification datasets. Best results are in bold, second-best are underlined. Results are averaged across three random train-test splits using the XGBoost classifier. “N/A” indicates that the running time exceeded 12 hours. Datasets Base Traditional Methods LLM-based Methods MALMAS DFS AutoFeat OpenFE CAAFE OCTree LLMFE Adult 0.849±0.009 0.857±0.001 0.849±0.009 0.849±0.009 0.868±0.005 0.845±0.011 0.853±0.011 0.875±0.010 Balance 0.908±0.009 0.989±0.009 0.908±0.009 0.908±0.009 1.000±0.000 0.933±0.031 0.994±0.008 1.000±0.000 Bank 0.869±0.007 0.891±0.014 0.869±0.007 0.904±0.003 0.874±0.022 0.873±0.010 0.875±0.012 0.895±0.002 Banknote 0.995±0.002 0"
+    },
+    {
+      "id": "table_02_p006",
+      "kind": "table",
+      "page": 6,
+      "image": "images/table_02_p006.png",
+      "caption": "Table 2: Performance (NRMSE) of all methods on 7 regression datasets. Best results are in bold, second-best are underlined (Lower is better). Results are averaged across three random train-test splits using XGBoost regressor.",
+      "nearby_text": "Table 1: Performance (AUC) of all methods on 16 classification datasets. Best results are in bold, second-best are underlined. Results are averaged across three random train-test splits using the XGBoost classifier. “N/A” indicates that the running time exceeded 12 hours. Datasets Base Traditional Methods LLM-based Methods MALMAS DFS AutoFeat OpenFE CAAFE OCTree LLMFE Adult 0.849±0.009 0.857±0.001 0.849±0.009 0.849±0.009 0.868±0.005 0.845±0.011 0.853±0.011 0.875±0.010 Balance 0.908±0.009 0.989±0.009 0.908±0.009 0.908±0.009 1.000±0.000 0.933±0.031 0.994±0.008 1.000±0.000 Bank 0.869±0.007 0.891±0.014 0.869±0.007 0.904±0.003 0.874±0.022 0.873±0.010 0.875±0.012 0.895±0.002 Banknote 0.995±0.002 0"
+    },
+    {
+      "id": "figure_03_p007",
+      "kind": "figure",
+      "page": 7,
+      "image": "images/figure_03_p007.png",
+      "caption": "Figure 3: Mean rank (lower is better) across different ablation configurations of MALMAS.",
+      "nearby_text": "6 5.11 5 4.50 Mean Rank 3.88 4 3.69 3.40 3 2.69 2.30 2 1.12 Base +A1 +A2 +A3 +A4 +A5 +A6 Full 1 Figure 3: Mean rank (lower is better) across different ablation configurations of MALMAS. 5.2 Overall Performance Table 1 summarizes the AUC performance of all evaluated methods across 16 classification datasets. Overall, MALMAS achieves the highest average AUC, consistently outperforming both traditional feature engineering methods and recent LLM- based approaches. MALMAS consistently im- proves upon the base model, ranking first or second on most benchmark datasets and exhibiting strong generalization across diverse real-world domains. Although LLM-based methods such as OCTree and LLMFE benefit "
+    },
+    {
+      "id": "figure_04_p007",
+      "kind": "figure",
+      "page": 7,
+      "image": "images/figure_04_p007.png",
+      "caption": "Figure 4: AUC performance on the Adult dataset across different rounds with and without memory.",
+      "nearby_text": "With Memory Without Memory 0.880 0.870 AUC 0.860 0.850 0.840 0 1 2 3 4 Rounds Figure 4: AUC performance on the Adult dataset across different rounds with and without memory. accumulating cross-round information and refining feature-generation strategies. Specifically, proce- dural memory records attempted features to reduce redundancy, feedback memory stores downstream performance to guide the next round of exploration, and conceptual memory abstracts cross-round pat- terns summarized by the Summary Agent into a global conceptual memory shared across agents. We observe a slight non-monotonicity from +A2 to +A3. This can plausibly occur because adding agents expands the candidate pool but may"
+    },
+    {
+      "id": "table_03_p007",
+      "kind": "table",
+      "page": 7,
+      "image": "images/table_03_p007.png",
+      "caption": "Table 1 summarizes the AUC performance of all evaluated methods across 16 classification datasets. Overall, MALMAS achieves the highest average AUC, consistently outperforming both traditional feature engineering methods and recent LLM- based approaches. MALMAS consistently im- proves upon the base model, ranking first or second on most benchmark datasets and exhibiting strong generalization across diverse real-world domains. Although LLM-based methods such as OCTree and LLMFE benefit from semantic-aware trans- formations, they still underperform compared to MALMAS in terms of overall average AUC. These results clearly and collectively underscore the effec- tiveness of memory-enhanced multi-agent collabo- ration in facilitating high-quality feature discovery. As shown in Table 2, MALMAS also achieves the lowest mean NRMSE on almost regression tasks, indicating its strong and reliable feature gen- eration capability beyond classification. Although some LLM-based baselines such as CAAFE and OCTree do not support regression, MALMAS still outperforms LLMFE by a large margin, confirming its advantage in continuous-value prediction.",
+      "nearby_text": "2.30 2 1.12 Base +A1 +A2 +A3 +A4 +A5 +A6 Full 1 Figure 3: Mean rank (lower is better) across different ablation configurations of MALMAS. 5.2 Overall Performance Table 1 summarizes the AUC performance of all evaluated methods across 16 classification datasets. Overall, MALMAS achieves the highest average AUC, consistently outperforming both traditional feature engineering methods and recent LLM- based approaches. MALMAS consistently im- proves upon the base model, ranking first or second on most benchmark datasets and exhibiting strong generalization across diverse real-world domains. Although LLM-based methods such as OCTree and LLMFE benefit from semantic-aware trans- formations, they stil"
+    },
+    {
+      "id": "table_04_p008",
+      "kind": "table",
+      "page": 8,
+      "image": "images/table_04_p008.png",
+      "caption": "Table 3: Classification performance (AUC) of H2O and DS-Agent on benchmark tabular datasets. “w/o” indicates training with original features, while “w/” indicates training with our derived features. Results are reported as mean ± standard deviation over three runs.",
+      "nearby_text": "Table 3: Classification performance (AUC) of H2O and DS-Agent on benchmark tabular datasets. “w/o” indicates training with original features, while “w/” indicates training with our derived features. Results are reported as mean ± standard deviation over three runs. Datasets H2O DS-Agent w/o w/ w/o w/ Adult 0.876±0.003 0.881±0.001 0.871±0.002 0.880±0.001 Bank 0.864±0.010 0.899±0.029 0.866±0.012 0.892±0.021 Breast_W 0.989±0.002 0.992±0.003 0.985±0.004 0.990±0.002 Churn 0.844±0.003 0.846±0.001 0.846±0.003 0.845±0.004 Titanic 0.859±0.003 0.869±0.001 0.855±0.001 0.866±0.003 5.5 Integration with Classical AutoML ticular algorithm, MALMAS remains effective un- der different decision boundaries and "
+    }
+  ]
+}

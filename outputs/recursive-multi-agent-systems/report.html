@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>让 AI 团队不再“群聊”：RecursiveMAS 把多智能体协作搬进隐空间循环</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef8ff;
+            --page: #fffefa;
+            --card-bg: #ffffff;
+            --text: #17324d;
+            --muted: #6f8aa3;
+            --accent: #1976c9;
+            --accent-light: #54b7ff;
+            --accent-soft: #e4f4ff;
+            --accent-deep: #0f4c81;
+            --accent-mint: #35b9b0;
+            --mint-soft: #e4f8f5;
+            --accent-warm: #f08ab1;
+            --warm-soft: #fff0f6;
+            --cream: #fff8df;
+            --border: #d7e9f7;
+            --border-soft: #eaf3fb;
+            --shadow: rgba(48, 100, 142, 0.12);
+            --shadow-soft: rgba(62, 111, 148, 0.08);
+        }
+
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            background:
+                linear-gradient(rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(180deg, #fbfdff 0%, #eef8ff 46%, #eaf6ff 100%);
+            background-size: 28px 28px, 28px 28px, auto;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(115deg, rgba(255, 248, 223, 0.66), transparent 34%),
+                linear-gradient(245deg, rgba(228, 248, 245, 0.55), transparent 42%);
+            opacity: 0.78;
+        }
+
+        ::selection {
+            background: rgba(66, 165, 245, 0.26);
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+        main > article {
+            position: relative;
+            background:
+                linear-gradient(180deg, rgba(255, 254, 250, 0.96) 0%, rgba(251, 253, 255, 0.98) 100%);
+            border: 1px solid rgba(215, 233, 247, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 22px 70px var(--shadow-soft);
+        }
+
+        main > article::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            right: 1.25rem;
+            top: 0;
+            height: 4px;
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint), var(--accent-warm));
+            opacity: 0.72;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.32rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.35;
+            color: var(--text);
+            max-width: 780px;
+            text-wrap: balance;
+        }
+
+        .tldr-card {
+            background:
+                linear-gradient(135deg, #ffffff 0%, #f2fbff 52%, #fff4f9 100%);
+            border: 1px solid rgba(84, 183, 255, 0.32);
+            border-left: 4px solid var(--accent-warm);
+            border-radius: 8px;
+            padding: 1.65rem 1.5rem 1.35rem;
+            position: relative;
+            box-shadow: 0 14px 36px var(--shadow-soft);
+            animation: soft-rise 0.55s ease-out both;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .tldr-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(240, 138, 177, 0.42);
+            box-shadow: 0 18px 42px var(--shadow);
+        }
+
+        .tldr-card::before {
+            content: 'TL;DR NOTE';
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 500;
+            color: #b64f77;
+            letter-spacing: 0.08em;
+            position: absolute;
+            top: 0.82rem;
+            left: 1.5rem;
+            background: rgba(255, 240, 246, 0.92);
+            border: 1px solid rgba(240, 138, 177, 0.18);
+            padding: 0.12rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .tldr-card::after {
+            content: '';
+            position: absolute;
+            top: 0.95rem;
+            right: 1.1rem;
+            width: 42px;
+            height: 14px;
+            border-top: 2px dotted rgba(53, 185, 176, 0.5);
+            border-bottom: 2px dotted rgba(240, 138, 177, 0.42);
+            opacity: 0.72;
+        }
+
+        .tldr-content {
+            font-size: 1rem;
+            line-height: 1.78;
+            color: var(--text);
+            padding-top: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .info-item {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,252,255,0.96));
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            min-width: 0;
+            box-sizing: border-box;
+            transition: max-height 0.3s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+            position: relative;
+            max-height: 78px;
+            overflow: hidden;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 22px rgba(48, 100, 142, 0.055);
+            animation: soft-rise 0.55s ease-out both;
+        }
+
+        .info-item:nth-child(2) { animation-delay: 0.04s; }
+        .info-item:nth-child(3) { animation-delay: 0.08s; }
+        .info-item:nth-child(4) { animation-delay: 0.12s; }
+
+        .info-item::before {
+            content: '';
+            position: absolute;
+            left: 0.8rem;
+            right: 0.8rem;
+            top: 0;
+            height: 3px;
+            border-radius: 0 0 5px 5px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint));
+            opacity: 0.42;
+        }
+
+        .info-item:hover {
+            border-color: rgba(84, 183, 255, 0.38);
+            box-shadow: 0 14px 34px var(--shadow);
+            transform: translateY(-2px);
+            z-index: 10;
+            max-height: 300px;
+        }
+
+        .info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-value {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        .info-link {
+            color: var(--accent);
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .info-link:hover {
+            text-decoration: underline;
+        }
+
+        .divider-section {
+            margin: 3rem 0 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .divider-line {
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-light) 20%, var(--accent-mint) 50%, var(--accent-warm) 82%, transparent 100%);
+            border-radius: 1px;
+        }
+
+        .divider-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.28rem 0.78rem;
+            animation: breathe 3.6s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.35; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .prose h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-top: 2.35rem;
+            margin-bottom: 0.875rem;
+            color: var(--text);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            text-wrap: balance;
+        }
+
+        .heading-emoji {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.8rem;
+            height: 1.8rem;
+            margin-right: 0.48rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-soft), var(--warm-soft));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            box-shadow: 0 6px 16px rgba(48, 100, 142, 0.07);
+            font-size: 1rem;
+            vertical-align: -0.12em;
+        }
+
+        .prose h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.0625rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.625rem;
+            color: var(--accent);
+        }
+
+        .prose p {
+            font-size: 1.03rem;
+            line-height: 1.9;
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .prose ul, .prose ol {
+            margin-bottom: 1rem;
+            padding-left: 1.25rem;
+        }
+
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.65;
+        }
+
+        .prose li::marker {
+            color: var(--accent);
+        }
+
+        .prose blockquote {
+            background: rgba(255, 248, 223, 0.58);
+            border-left: 3px solid var(--accent-warm);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .prose code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #eef8ff;
+            color: var(--accent);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        .prose pre {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1a365d;
+            color: #bee3f8;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .prose pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .prose strong {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .prose a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .prose a:hover {
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .prose img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 1.25rem auto 0.5rem;
+            border: 1px solid rgba(215, 233, 247, 0.88);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 16px 40px var(--shadow-soft);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose img:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 48px var(--shadow);
+        }
+
+        .prose figure {
+            margin: 1.5rem 0;
+        }
+
+        .prose .image-caption,
+        .prose figcaption {
+            margin: 0.625rem auto 0;
+            max-width: 92%;
+            padding: 0.68rem 0.92rem;
+            color: #163b5a;
+            background: linear-gradient(135deg, rgba(255, 254, 250, 0.96), rgba(228, 244, 255, 0.9));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            border-radius: 8px;
+            font-family: 'Outfit', 'Source Serif 4', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 650;
+            line-height: 1.6;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(48, 100, 142, 0.06);
+        }
+
+        .prose .spotlight-section {
+            margin: 3rem -0.5rem 2.4rem;
+            padding: 1.45rem 1.55rem 1.55rem;
+            border: 1px solid rgba(84, 183, 255, 0.24);
+            border-left: 5px solid var(--accent-warm);
+            border-radius: 8px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 223, 0.82) 44%, rgba(255, 240, 246, 0.78) 100%);
+            box-shadow: 0 18px 44px var(--shadow-soft);
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose .spotlight-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 54px var(--shadow);
+        }
+
+        .prose .spotlight-section::after {
+            content: '';
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            width: 46px;
+            height: 14px;
+            border-top: 2px dotted rgba(240, 138, 177, 0.38);
+            border-bottom: 2px dotted rgba(53, 185, 176, 0.32);
+            opacity: 0.8;
+        }
+
+        .prose .spotlight-section::before {
+            content: attr(data-label);
+            display: inline-block;
+            margin-bottom: 0.85rem;
+            padding: 0.18rem 0.55rem;
+            border-radius: 4px;
+            background: rgba(255, 240, 246, 0.86);
+            color: #b64f77;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .prose .spotlight-section h2 {
+            margin-top: 0;
+            color: #12314d;
+            border-bottom-color: rgba(25, 118, 201, 0.2);
+        }
+
+        .prose .spotlight-section p,
+        .prose .spotlight-section li {
+            color: #1c3650;
+        }
+
+        .prose .spotlight-section li {
+            margin-bottom: 0.72rem;
+        }
+
+        .prose .spotlight-section.research-block {
+            border-left-color: var(--accent-mint);
+            border-color: rgba(41, 167, 167, 0.24);
+            background:
+                linear-gradient(135deg, rgba(247, 252, 255, 0.98) 0%, rgba(228, 248, 245, 0.9) 58%, rgba(239, 248, 255, 0.9) 100%);
+        }
+
+        .prose .spotlight-section.research-block::before {
+            background: rgba(41, 167, 167, 0.12);
+            color: var(--accent-mint);
+        }
+
+        .prose table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            display: block;
+            overflow-x: auto;
+        }
+
+        .prose th,
+        .prose td {
+            border: 1px solid var(--border);
+            padding: 0.55rem 0.65rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .prose th {
+            background: #edf8ff;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .sidebar {
+            background: rgba(255, 254, 250, 0.88);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.375rem 0.75rem;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.15s ease;
+        }
+
+        .toc-link:hover {
+            color: var(--accent);
+            background: rgba(84, 183, 255, 0.11);
+        }
+
+        .toc-link.active {
+            color: var(--accent);
+            border-left-color: var(--accent-warm);
+            background: linear-gradient(90deg, var(--accent-soft), rgba(255, 240, 246, 0.78));
+            font-weight: 600;
+        }
+
+        .toc-link.h3 {
+            font-size: 0.75rem;
+            padding-left: 1.25rem;
+            font-weight: 400;
+        }
+
+        .scroll-hint {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 2rem;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .scroll-hint-arrow {
+            display: inline-block;
+            margin-top: 0.25rem;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes float {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #a9dbfb; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-light); }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @keyframes soft-rise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+            article {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+                border-radius: 0;
+            }
+            .hero-title { font-size: 1.75rem; }
+            .prose p { text-align: left; }
+            .prose .spotlight-section { margin-left: 0; margin-right: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sidebar fixed left-0 top-0 h-screen w-56 p-5 overflow-y-auto hidden lg:block">
+        <div class="sticky top-4">
+            <div class="flex items-center gap-2 mb-8">
+                <svg viewBox="0 0 16 16" class="w-5 h-5" fill="none">
+                    <circle cx="6" cy="6" r="4" stroke="#0066cc" stroke-width="1.5" fill="none"/>
+                    <line x1="9.5" y1="9.5" x2="14" y2="14" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="6" cy="6" r="1.5" fill="#0066cc" opacity="0.3"/>
+                </svg>
+                <span class="font-['Outfit'] font-semibold text-sm text-[var(--text)]">PaperPulse</span>
+            </div>
+
+            <p class="font-['JetBrains_Mono'] text-xs text-[var(--muted)] uppercase tracking-widest mb-3">Contents</p>
+            <ul id="toc-list" class="space-y-1"></ul>
+        </div>
+    </nav>
+
+    <main class="lg:ml-56">
+        <article class="max-w-4xl mx-auto px-8 py-12 lg:py-16">
+
+            <header class="mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded">PAPER NOTE</span>
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--muted)]">2026-05-04</span>
+                </div>
+            </header>
+
+            <section class="mb-6">
+                <h1 class="hero-title mb-6" id="hero-title">让 AI 团队不再“群聊”：RecursiveMAS 把多智能体协作搬进隐空间循环</h1>
+
+                <div class="tldr-card mb-5">
+                    <p class="tldr-content" id="tldr-content">Loading...</p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <p class="info-label">PAPER</p>
+                        <div class="info-value" id="paper-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">CODE</p>
+                        <div class="info-value" id="code-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">AUTHORS</p>
+                        <p class="info-value" id="paper-authors">-</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">KEYWORDS</p>
+                        <p class="info-value" id="paper-keywords">-</p>
+                    </div>
+                </div>
+
+                <div class="scroll-hint">
+                    <span>scroll for the brief</span>
+                    <span class="scroll-hint-arrow">↓</span>
+                </div>
+            </section>
+
+            <div class="divider-section">
+                <div class="divider-line"></div>
+                <span class="divider-text">FULL BRIEF</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <section class="prose" id="content">
+                <h2>TL;DR</h2>
+<p>RecursiveMAS 想解决一个很现实的问题：多智能体系统靠文本一轮轮交流，既慢、费 token，又很难把整个团队一起优化。它把 agent 协作改造成 latent-space 的递归计算，用轻量 RecursiveLink 在 agent 内部生成 latent thoughts、在不同 agent 间传递隐状态，并只训练这些连接模块。论文在数学、科学、医学、搜索和代码等 9 个 benchmark 上报告平均 8.3% 准确率提升，同时带来 1.2×–2.4× 推理加速和 34.6%–75.6% token 减少。</p>
+<h2>论文基本信息</h2>
+<ul>
+<li>论文链接：<a href="https://arxiv.org/abs/2604.25917v1">arXiv:2604.25917v1</a></li>
+<li>代码链接：<a href="https://recursivemas.github.io">Project Page</a></li>
+<li>作者团队：UIUC，Stanford University，NVIDIA，MIT；Xiyuan Yang、Jiaru Zou、Rui Pan、Ruizhong Qiu、Pan Lu 等</li>
+<li>关键词：多智能体系统，递归计算，隐空间协作，RecursiveLink，推理效率</li>
+</ul>
+<h2>多智能体的下一步，不一定是让大家多说话</h2>
+<p>多智能体系统的直觉很诱人：一个 agent 做 planner，一个 agent 做 critic，一个 agent 做 solver，或者让数学、代码、科学专家各自出主意，再由 summarizer 汇总。问题是，这种协作大多发生在文本层面。文本是人类可读的接口，却不是机器协作最高效的中间表示。</p>
+<p>RecursiveMAS 的核心判断是：如果 agent 之间每一轮都要完整 decode 成文本，再让下一个 agent 读进去，系统会同时碰到两个瓶颈。第一是效率，重复生成中间文本会带来显著 latency 和 token 开销。第二是学习，文本离散化会切断或削弱梯度流，让“整个团队一起变好”变得很难。</p>
+<p>这篇论文的主张很鲜明：把多智能体协作从“文本群聊”改造成“隐空间循环”。每个 agent 不再每轮都把想法说出来，而是在 latent states 里产生、传递、接收、再递归 refine。最后一轮才由最后一个 agent decode 出文本答案。</p>
+<figure class="image-block"><img src="images/figure_01_p001.png" alt="RecursiveMAS 的整体表现：训练递归和推理递归越深，轻量 Sequential setting 越强；在 Mixture、Deliberation、Distillation 等结构下也能提升。" /><figcaption>RecursiveMAS 的整体表现：训练递归和推理递归越深，轻量 Sequential setting 越强；在 Mixture、Deliberation、Distillation 等结构下也能提升。</figcaption></figure>
+<p>Figure 1 很好地概括了论文想卖的两个点：一是递归深度本身可以成为 scaling axis；二是这种机制不只适用于一种固定 agent 拓扑。Sequential、Mixture、Deliberation、Distillation 四种常见协作模式都能接上 RecursiveMAS，这使它更像一个系统级接口，而不是某个特定 pipeline 的小修小补。</p>
+<h2>RecursiveLink：给 agent 之间装一条隐空间传送带</h2>
+<p>RecursiveMAS 里最关键的模块叫 RecursiveLink。它很轻：本质上是两层线性层加 GELU，再配 residual connection。它有两个版本。</p>
+<p>Inner RecursiveLink 负责 agent 内部的 latent thoughts generation：把模型 last-layer hidden state 映射回 input embedding 空间，让模型可以不经过文本 token，就继续在连续隐空间里“想下一步”。Outer RecursiveLink 负责跨 agent 传递：把一个 agent 的 latent thoughts 映射到另一个 agent 的 embedding 空间，从而支持不同模型、不同尺寸、不同角色之间交换状态。</p>
+<figure class="image-block"><img src="images/figure_02_p004.png" alt="RecursiveMAS 的整体架构：agent 在内部通过 inner link 生成 latent thoughts，再通过 outer link 把隐状态传给下一个 agent，最后一轮才 decode 文本答案。" /><figcaption>RecursiveMAS 的整体架构：agent 在内部通过 inner link 生成 latent thoughts，再通过 outer link 把隐状态传给下一个 agent，最后一轮才 decode 文本答案。</figcaption></figure>
+<p>这个设计有两个值得注意的取舍。第一，它没有更新所有 LLM 参数，而是冻结 agent，只训练 RecursiveLink。这让训练成本可控，也让它更容易挂到现成的 Qwen、Llama、Gemma、Mistral 等模型组合上。第二，它用 residual branch 保留原始语义，让 RecursiveLink 主要学习分布对齐，而不是从零学一个完整映射。对于跨模型隐状态传递，这个保守设计很重要，否则很容易把语义在投影中洗掉。</p>
+<h2>这不是简单串联，而是把整个系统当成一个可训练的循环</h2>
+<p>如果只把 agent 串起来，RecursiveMAS 还只是一个 latent message passing 系统。它更有野心的地方在训练：作者把整个 MAS 视为一个递归展开的 computation graph，并提出 inner-outer loop training。</p>
+<p>第一阶段是 inner-loop training。每个 agent 独立 warm up 自己的 inner RecursiveLink，让它学会把 latent thoughts 对齐到 ground-truth text 的 embedding 分布。第二阶段是 outer-loop training。整个系统按递归轮数展开，agent A1 到 A2 到 ... 到 AN，再把最后 agent 的 latent output 回传给 A1，循环多轮；最后一轮输出文本，用 CE loss 训练所有 outer links，让梯度沿着完整递归路径回传。</p>
+<figure class="image-block"><img src="images/figure_04_p006.png" alt="RecursiveMAS 的两阶段训练流程：先并行训练各 agent 的 inner link，再在系统层面递归展开并训练 outer links。" /><figcaption>RecursiveMAS 的两阶段训练流程：先并行训练各 agent 的 inner link，再在系统层面递归展开并训练 outer links。</figcaption></figure>
+<p>这一步是论文和普通 MAS work 最大的区别之一。很多多智能体方法只是在 prompt、角色、上下文或反馈文本上做优化；RecursiveMAS 则试图让 agent 间的信息流本身成为可学习对象。作者还给出复杂度和梯度稳定性的理论分析：相比 text-based recursive MAS，latent-space 传递避免了每步 vocabulary-space decoding 的大头成本；在高置信 token 场景下，文本递归容易梯度消失，而 RecursiveLink 的 latent recursion 可以维持更稳定的梯度。</p>
+<h2>主结果：递归越深，文本协作越吃亏</h2>
+<p>实验覆盖 9 个 benchmark，横跨数学推理、科学/医学、代码生成和搜索 QA。模型组合也不是单一 backbone：包括 Qwen3/3.5、Llama-3、Gemma3、Mistral 等。作者主要拿 RecursiveMAS 和 Recursive-TextMAS 对比，后者保留相同 MAS 结构和递归预算，但 agent 之间通过文本交流。</p>
+<p>Table 2 的信息量很大：在 r=1、r=2、r=3 三种递归轮数下，RecursiveMAS 都在 accuracy、time、token 三个维度压过 Recursive-TextMAS。更关键的是，随着递归加深，差距扩大：相对文本递归，平均性能提升从 r=1 的 8.1% 扩到 r=2 的 19.6%、r=3 的 20.2%；推理加速从 1.2× 到 1.9× 再到 2.4×；token 减少从 34.6% 到 65.5%，最终到 75.6%。</p>
+<figure class="image-block"><img src="images/table_02_p009.png" alt="不同递归轮数下的主结果：RecursiveMAS 在准确率、推理时间和 token 使用上同时优于 Recursive-TextMAS，且优势随递归加深扩大。" /><figcaption>不同递归轮数下的主结果：RecursiveMAS 在准确率、推理时间和 token 使用上同时优于 Recursive-TextMAS，且优势随递归加深扩大。</figcaption></figure>
+<p>这组结果说明了一个很重要的系统现象：文本协作的成本不是线性小问题。递归轮数越多，文本中间态越多，系统越慢、越费 token；而 latent-space 协作把中间交流压在连续表示里，所以递归越深，效率优势越明显。换句话说，RecursiveMAS 不是在“少说一点文本”，而是在改变协作介质。</p>
+<h2>和强 baseline 比，它靠的是系统级优化</h2>
+<p>Table 3 把 RecursiveMAS 放到更宽的 baseline 里比较，包括单 agent LoRA、Full-SFT、Mixture-of-Agents、TextGrad、LoopLM、Recursive-TextMAS 等。在 r=3 时，RecursiveMAS 在所有列上都最高：MATH500 88.0，AIME2025 86.7，AIME2026 86.7，GPQA-D 66.2，LiveCodeBench 42.9，MedQA 79.3。</p>
+<figure class="image-block"><img src="images/table_03_p010.png" alt="RecursiveMAS 与单模型微调、MoA、TextGrad、LoopLM、Recursive-TextMAS 等方法的比较：在相同训练预算和模型设置下，RecursiveMAS 全面领先。" /><figcaption>RecursiveMAS 与单模型微调、MoA、TextGrad、LoopLM、Recursive-TextMAS 等方法的比较：在相同训练预算和模型设置下，RecursiveMAS 全面领先。</figcaption></figure>
+<p>这里最值得看的不是它“赢了所有表格”，而是它赢的方式。单独 fine-tune agent 当然能提升个体能力，但它仍然没有优化 agent 之间如何交换信息。RecursiveMAS 的增益来自系统级连接：不同角色、不同模型族、不同 hidden dimension 的 agent 被统一到一个可训练的 latent loop 里。这也是它在 AIME2025、AIME2026 这类 reasoning-intensive benchmark 上优势很大的原因之一。</p>
+<p>不过，Table 3 也提醒我们：RecursiveMAS 不是一个单点模型能力突破，而是一个系统结构和训练方式的突破。它的收益依赖 agent 组合、训练数据、递归轮数和任务类型。如果把这些条件换掉，增益是否还能稳定保留，需要继续验证。</p>
+<h2>最实用的卖点：更快、更省 token</h2>
+<p>很多多智能体论文最大的问题是：效果涨一点，但成本涨得更多。RecursiveMAS 这篇相对有吸引力的地方，是它同时报告了速度和 token 使用。Figure 5/6 显示，递归 1/2/3 轮时，平均 inference speedup 分别是 1.2×、1.9×、2.4×；token reduction 分别是 34.6%、65.5%、75.6%。</p>
+<figure class="image-block"><img src="images/figure_05_p011.png" alt="RecursiveMAS 的效率分析：随着递归轮数增加，推理速度优势和 token 减少幅度都进一步扩大。" /><figcaption>RecursiveMAS 的效率分析：随着递归轮数增加，推理速度优势和 token 减少幅度都进一步扩大。</figcaption></figure>
+<p>这对真实部署非常关键。多 agent 系统一旦进入复杂任务，最痛的往往不是“能不能多来一轮讨论”，而是每一轮讨论都要花钱、花时间、占上下文。RecursiveMAS 把中间过程留在 hidden states 里，只有最终答案 decode 出来，因此更像是在给 MAS 做一层低成本的内部总线。</p>
+<p>当然，这个效率优势也有前提：你得能访问和操作模型 hidden states，并且能训练 RecursiveLink。这不适合只通过黑盒 API 调用模型的场景。它更适合开源模型、本地部署、研究训练框架，或者能控制模型内部表示的系统。</p>
+<h2>递归真的在“变聪明”吗？语义分布给了一个侧面证据</h2>
+<p>论文没有只停留在准确率和效率，还做了语义分布分析。作者采样 500 个问答对，把 ground-truth answer 和 RecursiveMAS 在不同递归轮数下的 final answers 映射到同一个 embedding space，并用 PCA 可视化。</p>
+<figure class="image-block"><img src="images/figure_07_p012.png" alt="不同递归轮数下的答案语义分布：随着 r 从 1 到 3，RecursiveMAS 生成答案的分布逐步靠近 ground truth。" /><figcaption>不同递归轮数下的答案语义分布：随着 r 从 1 到 3，RecursiveMAS 生成答案的分布逐步靠近 ground truth。</figcaption></figure>
+<p>Figure 7 的信息很直观：r=1 时，生成答案分布和 ground truth 明显错开；r=2 开始靠近；r=3 时，两者基本重叠。这说明递归不是纯粹在堆计算，而是在逐步把系统输出推向更接近正确答案的语义区域。配合 case study 中“早期递归可能答错，深层递归纠正”的描述，这张图给了 RecursiveMAS 一个更像“迭代修正”的解释。</p>
+<h2>便宜但不廉价：只训练 0.31% 参数，还拿到更高平均准确率</h2>
+<p>成本表也很关键。RecursiveMAS 的 trainable parameters 是 13.12M，占 0.31%；GPU memory 15.29GB，估计成本 4.27 美元，平均准确率 74.9。相比之下，LoRA 是 15.92M 参数、21.67GB、6.64 美元、平均 66.9；Full-SFT 是 4.21B 参数、41.40GB、9.67 美元、平均 68.6。</p>
+<figure class="image-block"><img src="images/table_06_p013.png" alt="成本分析：RecursiveMAS 只训练 13.12M 参数，占 0.31%，同时获得更低成本和更高平均准确率。" /><figcaption>成本分析：RecursiveMAS 只训练 13.12M 参数，占 0.31%，同时获得更低成本和更高平均准确率。</figcaption></figure>
+<p>这张表强化了论文的实用价值：它不是为了提升一点性能就把训练成本推爆，而是把可训练部分集中在连接模块上。对多智能体系统来说，这个思路很自然：既然 agent 已经有能力，下一步也许不是分别把每个 agent 微调得更强，而是让它们之间的信息流更可学习、更稳定、更省。</p>
+<h2>我会如何读这篇论文</h2>
+<p>我会把 RecursiveMAS 看成一篇“多智能体系统工程”和“递归 latent computation”交叉的论文。它真正有价值的地方，不是又提出一种 agent 角色编排，而是把协作本身从文本接口抽离出来，变成可以训练、可以递归展开、可以分析复杂度和梯度的系统结构。</p>
+<p>最让我觉得扎实的，是论文同时回答了三个问题：为什么文本递归慢，为什么 latent 递归更容易训练，以及这种改动在多任务、多模型、多 agent 拓扑下是否有效。主结果、效率图、语义分布和成本表形成了一条比较完整的证据链。</p>
+<p>但我也会谨慎看待它。第一，它依赖 hidden-state 级别访问，这意味着黑盒 API agent 很难直接用。第二，跨模型 latent alignment 本身是一个脆弱问题，虽然 residual RecursiveLink 有帮助，但在更异质、更大规模、更开放的 agent 组合里是否稳定，还需要更强证据。第三，论文里的任务大多有明确答案或评价指标；开放式协作、长期记忆、多轮环境交互中，latent-loop 的可控性和可解释性仍然是未知数。</p>
+<h2>值得关注的地方</h2>
+<ol>
+<li><strong>黑盒 API 场景下有没有替代方案。</strong> 如果不能访问 hidden states，能否用压缩的中间表示、adapter server、或者可学习 memory bridge 近似 RecursiveLink，这是落地时绕不开的问题。</li>
+</ol>
+<ol>
+<li><strong>更复杂 agent 网络里的稳定性。</strong> 论文覆盖了 4 种协作模式，但真实 agent 系统可能是动态图、条件路由、工具调用和长期记忆混合体。RecursiveLink 在这些拓扑里是否还能保持梯度稳定，值得继续测。</li>
+</ol>
+<ol>
+<li><strong>latent 协作的可解释性和安全边界。</strong> 文本协作虽然慢，但至少人能看见 agent 在说什么。latent 协作更高效，也更黑箱。如何审计中间状态、发现错误传播、做安全约束，是后续必须补上的部分。</li>
+</ol>
+<ol>
+<li><strong>和 MoE / routing / test-time compute 的结合。</strong> RecursiveMAS 很像给 agent 系统加了一条隐空间循环总线。它是否能和动态路由、专家选择、预算自适应递归深度结合，可能会决定它能不能成为真正的系统级 scaling recipe。</li>
+</ol>
+            </section>
+
+            <footer class="footer">
+                <p class="footer-text">Generated by PaperPulse Lite</p>
+            </footer>
+
+        </article>
+    </main>
+
+    <script>
+        const content = document.getElementById('content');
+
+        const firstH1 = content.querySelector('h1');
+        if (firstH1) {
+            firstH1.style.display = 'none';
+        }
+
+        const tldrH2 = Array.from(content.querySelectorAll('h2')).find(h => h.textContent.toLowerCase().includes('tl;dr'));
+        if (tldrH2) {
+            let tldrText = '';
+            let nextEl = tldrH2.nextElementSibling;
+            while (nextEl && nextEl.tagName !== 'H2') {
+                if (nextEl.tagName === 'P') {
+                    tldrText += nextEl.textContent.trim() + ' ';
+                }
+                nextEl = nextEl.nextElementSibling;
+            }
+            if (tldrText) {
+                document.getElementById('tldr-content').textContent = tldrText.trim().substring(0, 350);
+            }
+        }
+
+        const paperLinksContainer = document.getElementById('paper-links');
+        const codeLinksContainer = document.getElementById('code-links');
+        const authorContainer = document.getElementById('paper-authors');
+        const keywordContainer = document.getElementById('paper-keywords');
+        let paperHtml = '';
+        let codeHtml = '';
+        let paperText = '';
+        let codeText = '';
+        let authorText = '';
+        let keywordText = '';
+        const metadataByLabel = {};
+        const paperUrls = new Set();
+        const codeUrls = new Set();
+
+        const escapeHtml = (value) => value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        const valueAfterLabel = (text, pattern) => {
+            const cleaned = text.replace(/\s+/g, ' ').trim();
+            const match = cleaned.match(pattern);
+            return match ? match[1].trim() : '';
+        };
+
+        const addMetadataValue = (label, value) => {
+            const normalizedLabel = label.replace(/\s+/g, '').toLowerCase();
+            const cleanedValue = value.replace(/\s+/g, ' ').trim();
+            if (!normalizedLabel || !cleanedValue) return;
+            metadataByLabel[normalizedLabel] = cleanedValue;
+        };
+
+        const collectLabeledMetadata = (el) => {
+            const text = el.textContent.replace(/\s+/g, ' ').trim();
+            const match = text.match(/^([^:：]{2,32})[:：]\s*(.+)$/);
+            if (match) addMetadataValue(match[1], match[2]);
+        };
+
+        const isPaperUrl = (url) => /arxiv\.org\/(abs|pdf)|doi\.org/i.test(url);
+        const isCodeUrl = (url) => /github\.com|gitlab\.com|huggingface\.co|modelscope\.cn|project|demo|github\.io/i.test(url);
+        const hasUrl = (text) => /https?:\/\/|arxiv\.org|doi\.org|github\.com|gitlab\.com|huggingface\.co|modelscope\.cn/i.test(text || '');
+        const looksLikeKeywords = (text) => {
+            const value = (text || '').trim();
+            if (!value) return false;
+            const parts = value.split(/[,，、;；]/).map(item => item.trim()).filter(Boolean);
+            return parts.length >= 3 && parts.length <= 8 && parts.every(item => item.length <= 28);
+        };
+
+        const appendInfoLink = (kind, url, label) => {
+            const normalized = url.trim().replace(/[.,;，。；]+$/, '');
+            if (!normalized || !normalized.startsWith('http')) return;
+            const safeUrl = escapeHtml(normalized);
+            const safeLabel = escapeHtml((label || normalized).trim());
+            if (kind === 'code') {
+                if (codeUrls.has(normalized)) return;
+                codeUrls.add(normalized);
+                codeHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+                return;
+            }
+            if (paperUrls.has(normalized)) return;
+            paperUrls.add(normalized);
+            paperHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+        };
+
+        const addLinksFromElement = (el, target) => {
+            const links = el.querySelectorAll('a');
+            links.forEach(a => {
+                const url = a.getAttribute('href');
+                if (!url || !url.startsWith('http')) return;
+                const label = a.textContent.trim();
+                if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+                else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+                else if (target === 'code') appendInfoLink('code', url, label);
+            });
+
+            if (!links.length) {
+                const urlMatches = el.textContent.match(/https?:\/\/[^\s)）]+/g);
+                if (urlMatches) {
+                    urlMatches.forEach(url => {
+                        if (isPaperUrl(url)) appendInfoLink('paper', url, url);
+                        else if (isCodeUrl(url)) appendInfoLink('code', url, url);
+                        else if (target === 'code') appendInfoLink('code', url, url);
+                    });
+                }
+            }
+        };
+
+        const nearbyMetadataElements = Array.from(content.querySelectorAll('p, li')).slice(0, 18);
+        nearbyMetadataElements.forEach(el => {
+            const text = el.textContent.trim();
+            const lower = text.toLowerCase();
+            collectLabeledMetadata(el);
+            addLinksFromElement(el, lower.includes('代码') || lower.includes('code') ? 'code' : 'paper');
+            if (!paperText && /论文链接|paper|arxiv|doi/i.test(text)) {
+                paperText = valueAfterLabel(text, /(?:论文链接|Paper|paper|arXiv|arxiv|DOI|doi)[:：]\s*(.+)$/i);
+            }
+            if (!codeText && /代码链接|code|github|repo/i.test(text)) {
+                codeText = valueAfterLabel(text, /(?:代码链接|Code|code|GitHub|github|Repo|repo)[:：]\s*(.+)$/i);
+            }
+            if (!authorText && /作者|团队|机构|authors?|affiliations?/i.test(text)) {
+                authorText = text.replace(/^(作者团队|作者|团队|机构|Authors?|Affiliations?)[:：]\s*/i, '').trim();
+            }
+            if (!keywordText && /关键词|keywords?/i.test(text)) {
+                keywordText = text.replace(/^(关键词|Keywords?)[:：]\s*/i, '').trim();
+            }
+        });
+
+        const headings = content.querySelectorAll('h2');
+        let infoH2 = null;
+        headings.forEach(h => {
+            if (h.textContent.includes('论文基本信息') || h.textContent.includes('论文信息') || h.textContent.includes('论文链接') || h.textContent.toLowerCase().includes('info')) {
+                infoH2 = h;
+            }
+        });
+
+        if (infoH2) {
+            let current = infoH2.nextElementSibling;
+            const infoElements = [];
+            while (current && current.tagName !== 'H2') {
+                if (current.matches && current.matches('p, ul, ol')) {
+                    infoElements.push(current);
+                    current.querySelectorAll('li').forEach(li => infoElements.push(li));
+                }
+                current.style.display = 'none';
+                current = current.nextElementSibling;
+            }
+            infoElements.forEach(el => {
+                collectLabeledMetadata(el);
+                addLinksFromElement(el, /代码|code|github|repo/i.test(el.textContent) ? 'code' : 'paper');
+            });
+
+            const codeH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('代码'));
+            const paperH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('论文链接'));
+
+            if (paperH3) {
+                let el = paperH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'paper');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (codeH3) {
+                let el = codeH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'code');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (!paperHtml && !codeHtml) {
+                const allLinks = content.querySelectorAll('a');
+                allLinks.forEach(a => {
+                    const url = a.getAttribute('href') || '';
+                    const label = a.textContent.trim();
+                    if (url.startsWith('http')) {
+                        if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+                        else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+                    }
+                });
+            }
+
+            const authorH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('作者'));
+            if (authorH) {
+                const nextEl = authorH.nextElementSibling;
+                if (nextEl) {
+                    const authorLis = nextEl.querySelectorAll('li');
+                    if (authorLis.length > 0) {
+                        const authors = Array.from(authorLis).map(li => li.textContent.trim()).slice(0, 3);
+                        authorText = authors.join(', ');
+                    } else {
+                        const rawText = nextEl.textContent.trim();
+                        const parts = rawText.split(/[,，;；\n]/);
+                        const top3 = parts.slice(0, 3).join(', ');
+                        authorText = top3;
+                    }
+                }
+            }
+
+            const keywordH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('关键词'));
+            if (keywordH) {
+                const nextEl = keywordH.nextElementSibling;
+                if (nextEl) {
+                    const keywordLis = nextEl.querySelectorAll('li');
+                    if (keywordLis.length > 0) {
+                        keywordText = Array.from(keywordLis).map(li => li.textContent.trim()).join(', ');
+                    } else {
+                        keywordText = nextEl.textContent.trim();
+                    }
+                }
+            }
+        }
+
+        const metadataValue = (...labels) => {
+            for (const label of labels) {
+                const key = label.replace(/\s+/g, '').toLowerCase();
+                if (metadataByLabel[key]) return metadataByLabel[key];
+            }
+            return '';
+        };
+
+        paperText = metadataValue('论文链接', '论文', 'paper', 'arxiv', 'doi') || paperText;
+        codeText = metadataValue('代码链接', '代码', '项目链接', '项目页', 'code', 'repo', 'github') || codeText;
+        authorText = metadataValue('作者团队', '作者', '团队', '机构', 'authors', 'affiliations') || authorText;
+        keywordText = metadataValue('关键词', 'keywords') || keywordText;
+
+        const allMetadataLinks = content.querySelectorAll('a');
+        allMetadataLinks.forEach(a => {
+            const url = a.getAttribute('href') || '';
+            const label = a.textContent.trim();
+            if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+            else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+        });
+
+        const cleanPlainInfo = (text) => (text || '')
+            .replace(/https?:\/\/[^\s,，;；)）]+/g, '')
+            .replace(/(?:论文链接|代码链接|项目链接|Paper|Code|Repo|GitHub|关键词|Keywords?)[:：]/gi, '')
+            .replace(/\s+/g, ' ')
+            .replace(/^[,，;；、\s]+|[,，;；、\s]+$/g, '')
+            .trim();
+
+        const sanitizeAuthors = (text) => {
+            let value = cleanPlainInfo(text);
+            if (!value || hasUrl(value) || /关键词|论文链接|代码链接|Paper|Code|GitHub/i.test(value) || looksLikeKeywords(value)) {
+                value = cleanPlainInfo(metadataValue('作者团队', '作者', '团队', '机构', 'authors', 'affiliations'));
+            }
+            return value;
+        };
+
+        const sanitizeKeywords = (text) => {
+            let value = cleanPlainInfo(text);
+            if (!value || hasUrl(value) || /作者|团队|机构|论文链接|代码链接|Paper|Code|GitHub/i.test(value)) {
+                value = cleanPlainInfo(metadataValue('关键词', 'keywords'));
+            }
+            const parts = value.split(/[,，、;；]/).map(item => item.trim()).filter(Boolean);
+            if (parts.length > 8) value = parts.slice(0, 8).join('，');
+            return value;
+        };
+
+        authorText = sanitizeAuthors(authorText);
+        keywordText = sanitizeKeywords(keywordText);
+
+        if (paperText && hasUrl(paperText)) {
+            (paperText.match(/https?:\/\/[^\s,，;；)）]+/g) || []).forEach(url => {
+                if (isPaperUrl(url)) appendInfoLink('paper', url, url);
+            });
+        }
+        if (codeText && hasUrl(codeText)) {
+            (codeText.match(/https?:\/\/[^\s,，;；)）]+/g) || []).forEach(url => {
+                if (isCodeUrl(url)) appendInfoLink('code', url, url);
+            });
+        }
+
+        if (paperHtml) paperLinksContainer.innerHTML = paperHtml;
+        else if (paperText) paperLinksContainer.innerHTML = escapeHtml(paperText);
+        if (codeHtml) codeLinksContainer.innerHTML = codeHtml;
+        else if (codeText) codeLinksContainer.innerHTML = escapeHtml(codeText);
+        if (authorText) authorContainer.textContent = authorText.substring(0, 180);
+        if (keywordText) keywordContainer.textContent = keywordText.substring(0, 180);
+
+        const spotlightRules = [
+            {
+                className: 'commentary-block',
+                label: 'Reading Note',
+                patterns: ['我会如何读', '我怎么看', '我的看法', '点评', '评价', '边界', '值得警惕', '冷静话', '读这篇论文']
+            },
+            {
+                className: 'research-block',
+                label: 'Tiny Sparks',
+                patterns: ['值得关注', '研究方向', '后续研究', '未来方向', '延伸思考', '开放问题', '接下来值得追', '值得追的问题', '之后可以', '思考']
+            }
+        ];
+
+        const wrapSection = (heading, rule) => {
+            if (heading.closest('.spotlight-section')) return;
+            const wrapper = document.createElement('section');
+            wrapper.className = `spotlight-section ${rule.className}`;
+            wrapper.dataset.label = rule.label;
+            heading.parentNode.insertBefore(wrapper, heading);
+            wrapper.appendChild(heading);
+            let next = wrapper.nextSibling;
+            while (next) {
+                const current = next;
+                next = next.nextSibling;
+                if (current.nodeType === Node.ELEMENT_NODE && current.tagName === 'H2') break;
+                wrapper.appendChild(current);
+            }
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            const text = h.textContent.trim();
+            const matched = spotlightRules.find(rule => rule.patterns.some(pattern => text.includes(pattern)));
+            if (matched && h.style.display !== 'none') {
+                wrapSection(h, matched);
+            }
+        });
+
+        const headingEmojiRules = [
+            { emoji: '⚡', patterns: ['tl;dr'] },
+            { emoji: '📌', patterns: ['论文基本信息', '论文信息'] },
+            { emoji: '🧩', patterns: ['不是', '问题', '现场', '痛点', '为什么', '背景'] },
+            { emoji: '🛠️', patterns: ['方法', '框架', '构建', '流程', '数据从哪里来', '系统', '模型'] },
+            { emoji: '📊', patterns: ['结果', '实验', '评测', 'benchmark', '指标', '解决率'] },
+            { emoji: '🔍', patterns: ['分析', '检索', '上下文', '错误', '案例', '失败'] },
+            { emoji: '💬', patterns: ['我会如何读', '我怎么看', '点评', '边界', '评价'] },
+            { emoji: '🌱', patterns: ['值得关注', '研究方向', '后续', '未来', '思考', '开放问题'] }
+        ];
+
+        const emojiForHeading = (heading) => {
+            const text = heading.textContent.trim().toLowerCase();
+            const matched = headingEmojiRules.find(rule => rule.patterns.some(pattern => text.includes(pattern.toLowerCase())));
+            return matched ? matched.emoji : '✦';
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            if (h.style.display === 'none' || h.dataset.emojiAdded === 'true') return;
+            const emoji = document.createElement('span');
+            emoji.className = 'heading-emoji';
+            emoji.setAttribute('aria-hidden', 'true');
+            emoji.textContent = emojiForHeading(h);
+            h.prepend(emoji);
+            h.dataset.emojiAdded = 'true';
+        });
+
+        const tocList = document.getElementById('toc-list');
+        const heroSection = document.querySelector('section.mb-6');
+        if (heroSection) {
+            heroSection.id = 'brief';
+            const briefLi = document.createElement('li');
+            const briefA = document.createElement('a');
+            briefA.href = '#brief';
+            briefA.textContent = 'Brief';
+            briefA.className = 'toc-link';
+            briefLi.appendChild(briefA);
+            tocList.appendChild(briefLi);
+        }
+
+        const allHeadings = content.querySelectorAll('h2, h3');
+        const exclude = ['tl;dr', '论文基本信息', '论文信息', '论文链接', '代码链接', '作者团队', '关键词'];
+
+        allHeadings.forEach((h, i) => {
+            const text = h.textContent.toLowerCase();
+            if (h.style.display === 'none') return;
+            if (exclude.some(e => text.includes(e.toLowerCase()))) {
+                h.style.display = 'none';
+                let current = h.nextElementSibling;
+                while (current && current.tagName !== 'H2') {
+                    current.style.display = 'none';
+                    current = current.nextElementSibling;
+                }
+                return;
+            }
+
+            const id = `s-${i}`;
+            h.id = id;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#${id}`;
+            a.textContent = h.textContent;
+            a.className = `toc-link ${h.tagName === 'H3' ? 'h3' : ''}`;
+            li.appendChild(a);
+            tocList.appendChild(li);
+        });
+
+        const tocLinks = tocList.querySelectorAll('.toc-link');
+        const highlight = () => {
+            let current = null;
+            if (heroSection && heroSection.getBoundingClientRect().top > -50) {
+                current = 'brief';
+            }
+            allHeadings.forEach(h => {
+                if (h.id && h.getBoundingClientRect().top <= 100) current = h.id;
+            });
+            tocLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+            });
+        };
+        window.addEventListener('scroll', highlight, { passive: true });
+        highlight();
+    </script>
+</body>
+</html>

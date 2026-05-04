@@ -1,0 +1,130 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/recursiveMAS.pdf",
+  "title": "Recursive Multi-Agent Systems",
+  "slug": "recursive-multi-agent-systems",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "paper": [
+      "https://arxiv.org/abs/2604.25917v1"
+    ],
+    "other": [
+      "https://recursivemas.github.io"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p001",
+      "kind": "figure",
+      "page": 1,
+      "image": "images/figure_01_p001.png",
+      "caption": "Figure 1 | Performance Landscape of RecursiveMAS across Training/Inference Recursion Depths (Top): The lightweight RecursiveMAS with sub-1.5B agents shows a clean scaling trend as recursion deepens. Generalization across Common Collaboration Patterns (Bottom): The Scaled Recursive- MAS with stronger LLM agents (5-10B) seamlessly adapts to diverse multi-agent system structures.",
+      "nearby_text": "Inference Recursion Round Accuracy (%) Training Recursion Round Training Recursion Round Training Recursion Round Training Recursion Round Collaboration Patterns Speed-up 1.6× 1.5× 1.5× 1.5× 1.4× Figure 1 | Performance Landscape of RecursiveMAS across Training/Inference Recursion Depths (Top): The lightweight RecursiveMAS with sub-1.5B agents shows a clean scaling trend as recursion deepens. Generalization across Common Collaboration Patterns (Bottom): The Scaled Recursive- MAS with stronger LLM agents (5-10B) seamlessly adapts to diverse multi-agent system structures. Contact: jiaru@stanford.edu, xiyuany4@illinois.edu"
+    },
+    {
+      "id": "figure_02_p004",
+      "kind": "figure",
+      "page": 4,
+      "image": "images/figure_02_p004.png",
+      "caption": "Figure 2 | Overall Architecture of RecursiveMAS. Each agent first leverages the inner RecursiveLink to perform latent thoughts generation, and then transfers the generated information to the next agent through the outer RecursiveLink. After the last agent finishes generation, its latent thoughts are fed back to the first agent, thereby forming a recursive loop within the multi-agent system.",
+      "nearby_text": "Recursive Multi-Agent Systems Latent Thoughts of A1 (Last-layer Embs) Latent Thoughts of A2 Decode for Outputs … … ℎ% ℎ%&' ℎ%&( (Final Round n) Agent A1 (Recursion Rounds <n) … Agent A1 Agent A2 Agent AN A2-aligned Input Embs A1-aligned Input Embs … … … … #! #\" ## ##%! ##%\" Contexts Input Contexts (Instruction, Question, etc.) Inner Link Outer Link Inner Link Looping… … ℎ% ℎ%&' … … Condition Generated on A1 Figure 2 | Overall Architecture of RecursiveMAS. Each agent first leverages the inner RecursiveLink to perform latent thoughts generation, and then transfers the generated information to the next agent through the outer RecursiveLink. After the last agent finishes generation, its latent t"
+    },
+    {
+      "id": "figure_03_p004",
+      "kind": "figure",
+      "page": 4,
+      "image": "images/figure_03_p004.png",
+      "caption": "Figure 3 | Illustration on the inner and outer RecursiveLink Design.",
+      "nearby_text": "RecursiveLink Last-layer Emb Agent Ai Emb Linear Linear Linear GELU GELU Linear Linear Residual Connection Residual Connection + + Input-layer Emb Agent Aj Emb Inner Outer (Same Agent) Figure 3 | Illustration on the inner and outer RecursiveLink Design. 4"
+    },
+    {
+      "id": "figure_04_p006",
+      "kind": "figure",
+      "page": 6,
+      "image": "images/figure_04_p006.png",
+      "caption": "Figure 4 | Two-Stage Training Pipeline of RecursiveMAS. We first perform inner-loop training for each agent in parallel to warm up the inner RecursiveLink for latent thoughts generation, and then conduct outer-loop training to recursively optimize the outer RecursiveLink over the entire system.",
+      "nearby_text": "Recursive Outer-Loop Training (Entire MAS) Forward Pass Backward Propagation Recursion Round 1 Outer-Training Connect … Input Contexts Input Contexts Agent A1 Agent A2 Agent AN ! ! Outer Link of A1,A2 Outer Link of AN,A1 Outer Link of A2,A3 Latent Outputs Recursion Round 2 Outer-Training … Input Contexts + Agent A1 Agent A2 Agent AN ! \" Outer Link of A1,A2 Outer Link of AN,A1 Outer Link of A2,A3 … Latent Outputs Recursion Round n Outer-Training CE Loss … Agent AN + Input Contexts Agent A1 Agent A2 ! # LM Head of AN Outer Link of A1,A2 Outer Link of A2,A3 Final Text Outputs Figure 4 | Two-Stage Training Pipeline of RecursiveMAS. We first perform inner-loop training for each agent in parallel "
+    },
+    {
+      "id": "table_01_p008",
+      "kind": "table",
+      "page": 8,
+      "image": "images/table_01_p008.png",
+      "caption": "Table 1 | Agent configurations for different collaboration patterns in RecursiveMAS. We select off-the-shelf models from diverse model families to form heterogeneous agent compositions with complementary strengths. Each assignment is chosen to match the role-specific needs of the corre- sponding collaboration pattern while preserving both practical efficiency and scalability.",
+      "nearby_text": "Recursive Multi-Agent Systems Table 1 | Agent configurations for different collaboration patterns in RecursiveMAS. We select off-the-shelf models from diverse model families to form heterogeneous agent compositions with complementary strengths. Each assignment is chosen to match the role-specific needs of the corre- sponding collaboration pattern while preserving both practical efficiency and scalability. Collaboration Pattern Role Model Size & Version Planner Qwen3-1.7B (Yang et al., 2025) Critic Llama3.2-1B-Instruct (Grattafiori et al., 2024) Solver Qwen2.5-Math-1.5B-Instruct (Qwen et al., 2025) Sequential Style (Light) Planner Gemma3-4B-it (Team et al., 2025) Critic Llama3.2-3B-Instruct ("
+    },
+    {
+      "id": "table_02_p009",
+      "kind": "table",
+      "page": 9,
+      "image": "images/table_02_p009.png",
+      "caption": "Table 2 | Main results of RecursiveMAS over Different Recursion Rounds. We report the accuracy (%, “Acc.”), end-to-end runtime (s, “Time”), and overall token usage (“Token”) across domains. For Code Gen., we evaluate the Light and Scaled settings on MBPP+ and LiveCodeBench, respectively. The average standard deviation of RecursiveMAS across 5 runs is ±0.0041 for accuracy, ±26 for runtime, and ±33 for tokens. We compare with all methods under the same MAS framework structure and recursion budgets. The performance and efficiency advantages of RecursiveMAS become increasingly significant as the recursion round 𝑟increases, with improvements highlighted.",
+      "nearby_text": "Recursive Multi-Agent Systems Table 2 | Main results of RecursiveMAS over Different Recursion Rounds. We report the accuracy (%, “Acc.”), end-to-end runtime (s, “Time”), and overall token usage (“Token”) across domains. For Code Gen., we evaluate the Light and Scaled settings on MBPP+ and LiveCodeBench, respectively. The average standard deviation of RecursiveMAS across 5 runs is ±0.0041 for accuracy, ±26 for runtime, and ±33 for tokens. We compare with all methods under the same MAS framework structure and recursion budgets. The performance and efficiency advantages of RecursiveMAS become increasingly significant as the recursion round 𝑟increases, with improvements highlighted. Method Metri"
+    },
+    {
+      "id": "table_03_p010",
+      "kind": "table",
+      "page": 10,
+      "image": "images/table_03_p010.png",
+      "caption": "Table 3 | Comparison of RecursiveMAS with Other Methods. We evaluate RecursiveMAS at recursion round 𝑟= 3. Under the same training budget and model setups, RecursiveMAS consistently outperforms advanced single-agent methods, alternative MAS frameworks, and recursive computation baselines.",
+      "nearby_text": "Recursive Multi-Agent Systems Table 3 | Comparison of RecursiveMAS with Other Methods. We evaluate RecursiveMAS at recursion round 𝑟= 3. Under the same training budget and model setups, RecursiveMAS consistently outperforms advanced single-agent methods, alternative MAS frameworks, and recursive computation baselines. Method MATH500 AIME2025 AIME2026 GPQA-D LiveCodeBench MedQA Single Agent (w/ LoRA) 83.1 70.0 73.3 62.0 37.4 76.1 Single Agent (w/ Full-SFT) 83.2 73.3 76.7 62.8 38.6 77.0 Mixture-of-Agents (MoA) 79.8 60.0 63.3 47.6 27.0 57.5 TextGrad 84.9 73.3 76.7 62.5 39.8 77.2 LoopLM 84.6 66.7 63.3 48.1 24.9 56.4 Recursive-TextMAS 85.8 73.3 73.3 61.6 38.7 77.0 RecursiveMAS 88.0 86.7 86.7 66.2"
+    },
+    {
+      "id": "table_04_p010",
+      "kind": "table",
+      "page": 10,
+      "image": "images/table_04_p010.png",
+      "caption": "Table 3 compares RecursiveMAS at the whole-system level against a broader set of baselines, including single fine-tuned agents, representative multi-agent frameworks, and alternative recursive methods. To ensure fair comparison, all methods are instantiated with identical backbone models and comparable training budgets (e.g., matched trainable parameter counts, recursion depth, training set).",
+      "nearby_text": "increases. When compared with the text-based recursion, RecursiveMAS consistently improves over the baseline by an average of 8.1% at 𝑟= 1, 19.6% at 𝑟= 2, and 20.2% at 𝑟= 3, with performance advantage more pronounced as the recursion deepens. Additionally, under identical MAS architectures, RecursiveMAS delivers steadily increasing efficiency gains across recursion rounds, accelerating end-to- end inference time from 1.2× to 2.4× while reducing output tokens from 34.6% to 75.6%. Additional case studies on the running pipeline of RecursiveMAS across domains are provided in Appendix G. Scaling Law on RecursiveMAS (Training v.s. Inference). We further examine the scaling behavior of recursion i"
+    },
+    {
+      "id": "figure_05_p011",
+      "kind": "figure",
+      "page": 11,
+      "image": "images/figure_05_p011.png",
+      "caption": "Figure 5 | Inference Time Speedup of RecursiveMAS across Three Recursion Rounds. Recursive- MAS exhibits increasing inference speedup as the recursion depth increases.",
+      "nearby_text": "Recursive Multi-Agent Systems Avg. 1.2x Inference Speedup Avg. 1.9x Inference Speedup Avg. 2.4x Inference Speedup Figure 5 | Inference Time Speedup of RecursiveMAS across Three Recursion Rounds. Recursive- MAS exhibits increasing inference speedup as the recursion depth increases. Avg. 65.5% Fewer Token Usage Avg. 75.6% Fewer Token Usage Avg. 34.6% Fewer Token Usage Figure 6 | Token Reduction of RecursiveMAS across Three Recursion Rounds. As recursion deepens, RecursiveMAS reduces substantially more tokens than Recursive-TextMAS. the accuracy of RecursiveMAS against strong standalone agents within each collaboration pattern. In Mixture-style, RecursiveMAS achieves an average improvement of 6"
+    },
+    {
+      "id": "figure_06_p011",
+      "kind": "figure",
+      "page": 11,
+      "image": "images/figure_06_p011.png",
+      "caption": "Figure 6 | Token Reduction of RecursiveMAS across Three Recursion Rounds. As recursion deepens, RecursiveMAS reduces substantially more tokens than Recursive-TextMAS.",
+      "nearby_text": "Avg. 1.2x Inference Speedup Avg. 1.9x Inference Speedup Avg. 2.4x Inference Speedup Figure 5 | Inference Time Speedup of RecursiveMAS across Three Recursion Rounds. Recursive- MAS exhibits increasing inference speedup as the recursion depth increases. Avg. 65.5% Fewer Token Usage Avg. 75.6% Fewer Token Usage Avg. 34.6% Fewer Token Usage Figure 6 | Token Reduction of RecursiveMAS across Three Recursion Rounds. As recursion deepens, RecursiveMAS reduces substantially more tokens than Recursive-TextMAS. the accuracy of RecursiveMAS against strong standalone agents within each collaboration pattern. In Mixture-style, RecursiveMAS achieves an average improvement of 6.2% over the strongest domain "
+    },
+    {
+      "id": "table_05_p012",
+      "kind": "table",
+      "page": 12,
+      "image": "images/table_05_p012.png",
+      "caption": "Table 4 | Efficacy on RecursiveLink Design. We com- pare accuracy across alternative architectural designs.",
+      "nearby_text": "Recursive Multi-Agent Systems RecursiveMAS performs most recursive interaction directly in latent space. Overall, RecursiveMAS enables a much more efficient system-level scaling behavior, and the resulting efficiency gain is amplified as the number of recursion rounds increases. 6. In-depth Analyses on RecursiveMAS RecursiveLink Design. To validate the effectiveness of RecursiveLink, we compare our 2-layer residual design against three alternatives: (i) a 1-layer network, (ii) a 1-layer network with the residual connection, and (iii) a 2-layer network without the residual connection. We conduct experiments using the scaled sequential-style RecursiveMAS and adapt the same architecture for bot"
+    },
+    {
+      "id": "figure_07_p012",
+      "kind": "figure",
+      "page": 12,
+      "image": "images/figure_07_p012.png",
+      "caption": "Figure 7 | Semantic Representations of RecursiveMAS across Differnt Recursion Rounds. We visualize the semantic distribution of the final answers generated by RecursiveMAS and the corre- sponding ground-truth across 500 questions. Increasing recursion rounds progressively aligns the generated distribution of RecursiveMAS with the ground truth distribution.",
+      "nearby_text": "Semantic Representations in Recursion. We analyze how the semantic distribution of RecursiveMAS changes across different recursion rounds. Under the scaled sequential setting of RecursiveMAS, we randomly sample 500 question-answer pairs spanning all downstream domains. We then use the solver agent’s input embedding layer to map each ground-truth answer string into embedding representations, which serves as the reference semantic distribution. We run RecursiveMAS at recursion rounds 𝑟= 1, 2, 3 to generate final answers for all these 500 questions, map the generated answers into embeddings using the same input embedding layer, and visualize both the ground-truth reference (\"purple\") and newly "
+    },
+    {
+      "id": "table_06_p013",
+      "kind": "table",
+      "page": 13,
+      "image": "images/table_06_p013.png",
+      "caption": "Table 5 | Cost analysis on RecursiveMAS. We report the peak GPU memory usage (GB), number of trainable parameters, estimated cost, and average accuracy (%) across all downstream tasks.",
+      "nearby_text": "Recursive Multi-Agent Systems Table 5 | Cost analysis on RecursiveMAS. We report the peak GPU memory usage (GB), number of trainable parameters, estimated cost, and average accuracy (%) across all downstream tasks. Methods GPU Mem. Trainable Param. Cost Avg. Acc. LoRA Training 21.67 15.92M (0.37%) $6.64 66.9 Full-SFT 41.40 4.21B (100%) $9.67 68.6 RecursiveMAS 15.29 13.12M (0.31%) $4.27 74.9 individual test instances and provide detailed case studies in Appendix F. Our case studies reveal a common pattern in which RecursiveMAS may produce an incorrect answer at an early stage, while deeper recursion successfully corrects it through iterative refinement. Together, these analyses provide furthe"
+    },
+    {
+      "id": "figure_08_p013",
+      "kind": "figure",
+      "page": 13,
+      "image": "images/figure_08_p013.png",
+      "caption": "Figure 8 | Effectiveness of RecursiveMAS’s latent thoughts with different step lengths.",
+      "nearby_text": "individual test instances and provide detailed case studies in Appendix F. Our case studies reveal a common pattern in which RecursiveMAS may produce an incorrect answer at an early stage, while deeper recursion successfully corrects it through iterative refinement. Together, these analyses provide further evidence that latent thoughts capture semantically meaningful representations, and that deeper recursion improves alignment toward correct final outputs. Figure 8 | Effectiveness of RecursiveMAS’s latent thoughts with different step lengths. Training Cost Analysis We further analyze the training cost of RecursiveMAS under the scaled sequential-style MAS setting. We compare RecursiveMAS wit"
+    }
+  ]
+}

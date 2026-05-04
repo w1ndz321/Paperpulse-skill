@@ -1,0 +1,68 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/2502.12110v11.pdf",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "paper": [
+      "https://arxiv.org/abs/2502.12110v11"
+    ],
+    "code": [
+      "https://github.com/WujiangXu/AgenticMemory",
+      "https://github.com/WujiangXu/A-mem-sys"
+    ],
+    "other": [
+      "mailto:wujiang.xu@rutgers.edu"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p002",
+      "kind": "figure",
+      "page": 2,
+      "image": "images/figure_01_p002.png",
+      "caption": "Figure 1: Traditional memory systems require predefined memory access patterns specified in the workflow, limiting their adaptability to diverse scenarios. Contrastly, our A-MEM enhances the flexibility of LLM agents by enabling dynamic memory operations.",
+      "nearby_text": "Write Interaction Write Interaction Read Read Environment LLM Agents Agentic Memory Environment LLM Agents Memory (a) Traditional memory system. (b) Our proposed agentic memory. Figure 1: Traditional memory systems require predefined memory access patterns specified in the workflow, limiting their adaptability to diverse scenarios. Contrastly, our A-MEM enhances the flexibility of LLM agents by enabling dynamic memory operations. unable to forge innovative connections or develop new organizational patterns as knowledge evolves. Such rigid structures, coupled with fixed agent workflows, severely restrict these systems’ ability to generalize across new environments and maintain effectiveness i"
+    },
+    {
+      "id": "figure_02_p003",
+      "kind": "figure",
+      "page": 3,
+      "image": "images/figure_02_p003.png",
+      "caption": "Figure 2: Our A-MEM architecture comprises three integral parts in memory storage. During note construction, the system processes new interaction memories and stores them as notes with multiple attributes. The link generation process first retrieves the most relevant historical memories and then employs an LLM to determine whether connections should be established between them. The concept of a ’box’ describes that related memories become interconnected through their similar contextual descriptions, analogous to the Zettelkasten method. However, our approach allows individual memories to exist simultaneously within multiple different boxes. During the memory retrieval stage, we extract query embeddings using a text encoding model and search the memory database for relevant matches. When related memory is retrieved, similar memories that are linked within the same box are also automatically accessed.",
+      "nearby_text": "Note Construction Link Generation Memory Evolution Memory Retrieval Memory Interaction Text Model Retrieve … … … … … … … Query Embedding Box 1 Box i Box n+1 Environment LLM Agents … … Query Top-k … … … … … … … Write Box j Box n Box n+2 Conversation 1 Conversation 2 1st Top-k The cache system works great, but we're seeing high Relative Memory Can you help me implement a … … custom cache system for my web application? I need it to handle both memory and disk memory usage in production. Can we modify mj it to implement an LRU storage. Retrieve eviction policy? LLM Note Attributes: Store Action LLM LLM Timestamp Content LLM Agents … … … … Context Box n+1 Box n+2 Keywords Evolve Tags Embedding No"
+    },
+    {
+      "id": "table_01_p006",
+      "kind": "table",
+      "page": 6,
+      "image": "images/table_01_p006.png",
+      "caption": "Table 1: Experimental results on LoCoMo dataset of QA tasks across five categories (Multi Hop, Temporal, Open Domain, Single Hop, and Adversial) using different methods. Results are reported in F1 and BLEU-1 (%) scores. The best performance is marked in bold, and our proposed method A-MEM (highlighted in gray) demonstrates competitive performance across six foundation language models.",
+      "nearby_text": "Table 1: Experimental results on LoCoMo dataset of QA tasks across five categories (Multi Hop, Temporal, Open Domain, Single Hop, and Adversial) using different methods. Results are reported in F1 and BLEU-1 (%) scores. The best performance is marked in bold, and our proposed method A-MEM (highlighted in gray) demonstrates competitive performance across six foundation language models. Category Average Multi Hop Temporal Open Domain Single Hop Adversial Ranking Token F1 BLEU F1 BLEU F1 BLEU F1 BLEU F1 BLEU F1 BLEU Length Model Method LOCOMO 25.02 19.75 18.41 14.77 12.04 11.16 40.36 29.05 69.23 68.75 2.4 2.4 16,910 READAGENT 9.15 6.48 12.60 8.87 5.31 5.12 9.67 7.66 9.81 9.02 4.2 4.2 643 MEMORY"
+    },
+    {
+      "id": "table_02_p007",
+      "kind": "table",
+      "page": 7,
+      "image": "images/table_02_p007.png",
+      "caption": "Table 2: Comparison of different memory mechanisms across multiple evaluation metrics on DialSim [16]. Higher scores indicate better performance, with A-MEM showing superior results across all metrics.",
+      "nearby_text": "Table 2: Comparison of different memory mechanisms across multiple evaluation metrics on DialSim [16]. Higher scores indicate better performance, with A-MEM showing superior results across all metrics. Method F1 BLEU-1 ROUGE-L ROUGE-2 METEOR SBERT Similarity LoCoMo 2.55 3.13 2.75 0.90 1.64 15.76 MemGPT 1.18 1.07 0.96 0.42 0.95 8.54 A-MEM 3.45 3.37 3.54 3.60 2.05 19.51 Table 3: An ablation study was conducted to evaluate our proposed method against the GPT-4o-mini base model. The notation ’w/o’ indicates experiments where specific modules were removed. The abbreviations LG and ME denote the link generation module and memory evolution module, respectively. Method Category Multi Hop Temporal Op"
+    },
+    {
+      "id": "table_03_p007",
+      "kind": "table",
+      "page": 7,
+      "image": "images/table_03_p007.png",
+      "caption": "Table 3: An ablation study was conducted to evaluate our proposed method against the GPT-4o-mini base model. The notation ’w/o’ indicates experiments where specific modules were removed. The abbreviations LG and ME denote the link generation module and memory evolution module, respectively.",
+      "nearby_text": "Table 2: Comparison of different memory mechanisms across multiple evaluation metrics on DialSim [16]. Higher scores indicate better performance, with A-MEM showing superior results across all metrics. Method F1 BLEU-1 ROUGE-L ROUGE-2 METEOR SBERT Similarity LoCoMo 2.55 3.13 2.75 0.90 1.64 15.76 MemGPT 1.18 1.07 0.96 0.42 0.95 8.54 A-MEM 3.45 3.37 3.54 3.60 2.05 19.51 Table 3: An ablation study was conducted to evaluate our proposed method against the GPT-4o-mini base model. The notation ’w/o’ indicates experiments where specific modules were removed. The abbreviations LG and ME denote the link generation module and memory evolution module, respectively. Method Category Multi Hop Temporal Op"
+    },
+    {
+      "id": "table_04_p008",
+      "kind": "table",
+      "page": 8,
+      "image": "images/table_04_p008.png",
+      "caption": "Table 4: Comparison of memory usage and retrieval time across different memory methods and scales.",
+      "nearby_text": "47.5 14 F1 BLEU-1 F1 BLEU-1 45.85 45.60 F1 BLEU-1 26.97 27.02 26.81 27.5 45.08 45.22 12.24 12.14 25.87 12.00 45.0 12 43.60 25.0 10.57 10.35 10.29 42.5 22.5 9.76 9.61 10 20.19 20.09 20.15 19.91 19.45 20.0 40.0 8 7.38 17.5 7.03 37.5 36.44 36.67 35.53 35.85 35.76 14.36 15.0 6 35.0 12.5 10 20 30 40 50 k values 10 20 30 40 50 k values 10 20 30 40 50 k values (a) Multi Hop (c) Open Domain (b) Temporal 50.03 44.55 45 49.47 F1 BLEU-1 47.24 F1 BLEU-1 50 47.76 41.55 40 45 43.86 43.19 38.15 37.02 40 39.11 34.32 35 33.67 38.35 32.12 31.15 35 30 28.31 30.29 25.43 29.49 30 25 10 20 30 40 50 k values 10 20 30 40 50 k values (e) Adversarial Figure 3: Impact of memory retrieval parameter k across different t"
+    }
+  ]
+}

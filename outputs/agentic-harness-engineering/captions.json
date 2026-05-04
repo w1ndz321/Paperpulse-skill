@@ -1,0 +1,82 @@
+{
+  "pdf": "/Users/jupiter/Desktop/papers/ahe.pdf",
+  "title": "Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses",
+  "slug": "agentic-harness-engineering",
+  "source": "source_text.md",
+  "images_dir": "images",
+  "stripped_references": true,
+  "links": {
+    "paper": [
+      "https://arxiv.org/abs/2604.25850v3"
+    ],
+    "code": [
+      "https://github.com/china-qijizhifeng/agentic-harness-engineering"
+    ]
+  },
+  "assets": [
+    {
+      "id": "figure_01_p002",
+      "kind": "figure",
+      "page": 2,
+      "image": "images/figure_01_p002.png",
+      "caption": "Figure 1: AHE evolves a bash-only seed past every human-designed and self-evolving baseline on Terminal-Bench 2. All three role agents share one base model, isolating the gain to harness edits rather than analyzer or editor capability.",
+      "nearby_text": "80 AHE best-so-far AHE pass@1 per iteration TFGRPO (72.3) Codex (71.9) ACE (68.9) (3) Cross-step risk monitor: observe command sequences (4) Post-success hard-block + pre-turn risk salience [middleware] [tool + middleware] Score on Terminal-Bench (%) 78 76 74 72 (2) Publish-state guard: protect (1) Contract-first workflow + tunable shell timeout verified state post-success [prompt + tool] [prompt + tool] 70 68 1 2 3 4 5 6 7 8 9 10 Automatic evolution iteration Figure 1: AHE evolves a bash-only seed past every human-designed and self-evolving baseline on Terminal-Bench 2. All three role agents share one base model, isolating the gain to harness edits rather than analyzer or editor capability."
+    },
+    {
+      "id": "figure_02_p004",
+      "kind": "figure",
+      "page": 4,
+      "image": "images/figure_02_p004.png",
+      "caption": "Figure 2: The AHE pipeline links three observable surfaces into one closed loop. Components, rollout experience, and edit decisions each surface as structured artifacts another agent reads, and every edit becomes a falsifiable prediction the next round verifies.",
+      "nearby_text": "I. Component Observability NexAU Harness System Prompt ~10M tokens Coding Agent Raw trace Evolve Agent Skills Tools Middleware Agent Debugger ~10K tokens Overview Sub-agent Memory Environment II. Experience Observability History III. Decision Observability Modify Component Evidence Figure 2: The AHE pipeline links three observable surfaces into one closed loop. Components, rollout experience, and edit decisions each surface as structured artifacts another agent reads, and every edit becomes a falsifiable prediction the next round verifies. Three observability layers implement this principle. Component observability (§3.1) is realized by a decoupled, file-level harness substrate that maps eac"
+    },
+    {
+      "id": "table_01_p006",
+      "kind": "table",
+      "page": 6,
+      "image": "images/table_01_p006.png",
+      "caption": "Table 1: Pass@1 on Terminal-Bench 2 across 89 tasks, by official difficulty. NexAU0 is the shared seed; ACE, TF-GRPO, and AHE are three self- evolution loops layered on top of it. Bold marks the best per column; ties are all bold.",
+      "nearby_text": "Evaluation. We drive evolution on the full 89 tasks of Terminal-Bench 2 [21], split as 4 easy, 55 medium, and 30 hard, with per-task timeout extended to 1 hour. For cross-benchmark transfer we evaluate the AHE harness on SWE-bench-verified [14], 500 tasks across seven repositories. We report two metrics per configuration: pass@1, the mean binary success rate over k rollouts per task; and tokens/trial, the mean per-trial total of prompt plus completion tokens across all LLM calls, in thousands. Infrastructure-aborted or timed-out trials count as failures under pass@1 (matching the official terminal-bench leaderboard) and are excluded from token means to avoid truncated figures. Runtime infras"
+    },
+    {
+      "id": "table_02_p007",
+      "kind": "table",
+      "page": 7,
+      "image": "images/table_02_p007.png",
+      "caption": "Table 2: Cross-benchmark transfer on SWE-bench-verified. ACE, TF-GRPO, and AHE share the NexAU0 seed and differ only in their self-evolution loop; all four columns run on GPT-5.4. AHE and the two self-evolve baselines are evolved on Terminal-Bench 2 and evaluated without in-domain re-evolution. Per-column bold marks the best; ties are all bold.",
+      "nearby_text": "Table 2: Cross-benchmark transfer on SWE-bench-verified. ACE, TF-GRPO, and AHE share the NexAU0 seed and differ only in their self-evolution loop; all four columns run on GPT-5.4. AHE and the two self-evolve baselines are evolved on Terminal-Bench 2 and evaluated without in-domain re-evolution. Per-column bold marks the best; ties are all bold. Success rate ↑ Tokens k ↓ Repo N ACE TF-GRPO NexAU0 AHE ACE TF-GRPO NexAU0 AHE All 500 74.6% 74.2% 75.2% 75.6% 679 582 526 461 django 231 79.2% 78.8% 79.2% 81.0% 707 583 527 484 sympy 75 69.3% 68.0% 70.7% 70.7% 602 572 494 479 sphinx-doc 44 61.4% 65.9% 68.2% 70.5% 990 848 731 656 matplotlib 34 70.6% 70.6% 73.5% 73.5% 622 530 486 391 scikit-learn 32 93"
+    },
+    {
+      "id": "figure_03_p008",
+      "kind": "figure",
+      "page": 8,
+      "image": "images/figure_03_p008.png",
+      "caption": "Figure 3: Cross-model transfer on Terminal-Bench 2, 89 tasks. The AHE workspace evolved on GPT-5.4 high is re-evaluated on each base without further evolution, paired against the NexAU0 seed on the same base.",
+      "nearby_text": "+7.3 NexAU0 seed +2.3 80 77.0 AHE (evolved on GPT-5.4 high) 74.7 72.5 +2.3 69.7 68.0 70 +6.3 +10.1 65.7 62.5 61.8 pass@1 60 56.2 51.7 50 +5.1 41.6 40 36.5 GPT-5.4 high GPT-5.4 xhigh GPT-5.4 med gemini-3.1-flash-lite qwen-3.6-plus deepseek-v4-flash Figure 3: Cross-model transfer on Terminal-Bench 2, 89 tasks. The AHE workspace evolved on GPT-5.4 high is re-evaluated on each base without further evolution, paired against the NexAU0 seed on the same base. Table 3: Component-level ablations on Terminal-Bench 2. Each “+ X only” row swaps a single AHE component into the NexAU0 seed: long-term memory, tool set, middleware, or system prompt. Per-column best is bolded. Variant All Easy Medium Hard 89"
+    },
+    {
+      "id": "table_03_p008",
+      "kind": "table",
+      "page": 8,
+      "image": "images/table_03_p008.png",
+      "caption": "Table 3: Component-level ablations on Terminal-Bench 2. Each “+ X only” row swaps a single AHE component into the NexAU0 seed: long-term memory, tool set, middleware, or system prompt. Per-column best is bolded.",
+      "nearby_text": "+7.3 NexAU0 seed +2.3 80 77.0 AHE (evolved on GPT-5.4 high) 74.7 72.5 +2.3 69.7 68.0 70 +6.3 +10.1 65.7 62.5 61.8 pass@1 60 56.2 51.7 50 +5.1 41.6 40 36.5 GPT-5.4 high GPT-5.4 xhigh GPT-5.4 med gemini-3.1-flash-lite qwen-3.6-plus deepseek-v4-flash Figure 3: Cross-model transfer on Terminal-Bench 2, 89 tasks. The AHE workspace evolved on GPT-5.4 high is re-evaluated on each base without further evolution, paired against the NexAU0 seed on the same base. Table 3: Component-level ablations on Terminal-Bench 2. Each “+ X only” row swaps a single AHE component into the NexAU0 seed: long-term memory, tool set, middleware, or system prompt. Per-column best is bolded. Variant All Easy Medium Hard 89"
+    },
+    {
+      "id": "table_04_p008",
+      "kind": "table",
+      "page": 8,
+      "image": "images/table_04_p008.png",
+      "caption": "Table 3 decomposes the AHE gain at the component level. Each “+ X only” row takes the NexAU0 seed and swaps in one component from the fully evolved AHE configuration, namely long-term memory, tools, middleware, or system prompt, leaving the other three at their seed defaults. Three of the four single-component variants outperform the seed; the system-prompt swap is the only regression.",
+      "nearby_text": "+ memory only 75.3% 50.0% 83.6% 63.3% + tool only 73.0% 75.0% 87.3% 46.7% + middleware only 71.9% 100.0% 81.8% 50.0% + system_prompt only 67.4% 75.0% 78.2% 46.7% AHE full 77.0% 100.0% 88.2% 53.3% Within one family the profile is non-monotone: +2.3 pp on medium, +7.3 pp on high from §4.2, and +2.3 pp on xhigh. AHE’s step budget and per-task timeout were fitted to GPT-5.4 high during evolution; medium has more time-per-step slack but loses a reasoning tier of raw capability, while xhigh pushes more trials past the per-task timeout, which our pass@1 convention (§4.1) counts as failures. Either direction discounts the gain. The load-bearing finding is that all five gains land positive: the AHE w"
+    },
+    {
+      "id": "figure_04_p009",
+      "kind": "figure",
+      "page": 9,
+      "image": "images/figure_04_p009.png",
+      "caption": "Figure 4: Cross-iteration mean precision and recall of the evolve model’s self-predictions across 9 evaluation rounds of the GPT-5.4 AHE loop on Terminal-Bench 2, alongside the random-prediction baseline. Left: fix predictions. Right: regression predictions.",
+      "nearby_text": "Cross-iteration mean Random baseline Cross-iteration mean Random baseline 51.4% 50 11.8% 11.1% 40 10 33.7% Value (%) Value (%) 30 5.6% 5.4% 20 5 10.6% 10 6.5% 0 0 Regression Regression Fix precision Fix recall precision recall Figure 4: Cross-iteration mean precision and recall of the evolve model’s self-predictions across 9 evaluation rounds of the GPT-5.4 AHE loop on Terminal-Bench 2, alongside the random-prediction baseline. Left: fix predictions. Right: regression predictions. command; on Medium it lands within 0.9 pp of full AHE, while on Hard a built-in publish guard closes the loop too early. Middleware adds a finish-hook that forces one evaluator-isomorphic closure check; on Easy it "
+    }
+  ]
+}
