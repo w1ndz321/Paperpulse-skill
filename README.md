@@ -14,6 +14,7 @@
 | 📚 | [别再把 Prompt 越改越短了：ACE 让大模型把经验攒成一本会进化的攻略书](https://w1ndz321.github.io/paperpulse-skill/ace-agentic-context-engineering/report.html) |
 | 🔧 | [会写代码不等于会修仓库：SWE-bench 把大模型拉进真实 GitHub 现场](https://w1ndz321.github.io/paperpulse-skill/swe-bench-can-language-models-resolve/report.html) |
 | 🤖 | [AI 进入 HR，不只是自动筛简历：一张人才分析的全景地图](https://w1ndz321.github.io/paperpulse-skill/comprehensive-survey-artificial-intelligence-techniques/report.html) |
+| 🧩 | [招聘匹配的难点不是推荐，而是说清楚"为什么这个人适合这份工"](https://w1ndz321.github.io/paperpulse-skill/person-job-fit-adapting-right-talent/report.html) |
 | 🌍 | [别再把 Agent 关在玩具环境里：Agent-World 想给它造一座会进化的训练城市](https://w1ndz321.github.io/paperpulse-skill/agent-world-scaling-real-world-environment/report.html) |
 | 📊 | [让表格特征工程不再靠拍脑袋：MALMAS 给 LLM Agent 装上记忆后，开始会复盘了](https://w1ndz321.github.io/paperpulse-skill/memory-augmented-llm-based-multi-agent-system-automated/report.html) |
 | ⚙️ | [别只训练模型了：让 Coding Agent 的操作系统自己进化起来](https://w1ndz321.github.io/paperpulse-skill/agentic-harness-engineering/report.html) |
