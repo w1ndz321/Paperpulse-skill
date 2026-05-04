@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>别再把 Agent 关在玩具环境里：Agent-World 想给它造一座会进化的训练城市</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef8ff;
+            --page: #fffefa;
+            --card-bg: #ffffff;
+            --text: #17324d;
+            --muted: #6f8aa3;
+            --accent: #1976c9;
+            --accent-light: #54b7ff;
+            --accent-soft: #e4f4ff;
+            --accent-deep: #0f4c81;
+            --accent-mint: #35b9b0;
+            --mint-soft: #e4f8f5;
+            --accent-warm: #f08ab1;
+            --warm-soft: #fff0f6;
+            --cream: #fff8df;
+            --border: #d7e9f7;
+            --border-soft: #eaf3fb;
+            --shadow: rgba(48, 100, 142, 0.12);
+            --shadow-soft: rgba(62, 111, 148, 0.08);
+        }
+
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            background:
+                linear-gradient(rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(84, 183, 255, 0.055) 1px, transparent 1px),
+                linear-gradient(180deg, #fbfdff 0%, #eef8ff 46%, #eaf6ff 100%);
+            background-size: 28px 28px, 28px 28px, auto;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(115deg, rgba(255, 248, 223, 0.66), transparent 34%),
+                linear-gradient(245deg, rgba(228, 248, 245, 0.55), transparent 42%);
+            opacity: 0.78;
+        }
+
+        ::selection {
+            background: rgba(66, 165, 245, 0.26);
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+        main > article {
+            position: relative;
+            background:
+                linear-gradient(180deg, rgba(255, 254, 250, 0.96) 0%, rgba(251, 253, 255, 0.98) 100%);
+            border: 1px solid rgba(215, 233, 247, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 22px 70px var(--shadow-soft);
+        }
+
+        main > article::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            right: 1.25rem;
+            top: 0;
+            height: 4px;
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint), var(--accent-warm));
+            opacity: 0.72;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.32rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.35;
+            color: var(--text);
+            max-width: 780px;
+            text-wrap: balance;
+        }
+
+        .tldr-card {
+            background:
+                linear-gradient(135deg, #ffffff 0%, #f2fbff 52%, #fff4f9 100%);
+            border: 1px solid rgba(84, 183, 255, 0.32);
+            border-left: 4px solid var(--accent-warm);
+            border-radius: 8px;
+            padding: 1.65rem 1.5rem 1.35rem;
+            position: relative;
+            box-shadow: 0 14px 36px var(--shadow-soft);
+            animation: soft-rise 0.55s ease-out both;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .tldr-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(240, 138, 177, 0.42);
+            box-shadow: 0 18px 42px var(--shadow);
+        }
+
+        .tldr-card::before {
+            content: 'TL;DR NOTE';
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 500;
+            color: #b64f77;
+            letter-spacing: 0.08em;
+            position: absolute;
+            top: 0.82rem;
+            left: 1.5rem;
+            background: rgba(255, 240, 246, 0.92);
+            border: 1px solid rgba(240, 138, 177, 0.18);
+            padding: 0.12rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .tldr-card::after {
+            content: '';
+            position: absolute;
+            top: 0.95rem;
+            right: 1.1rem;
+            width: 42px;
+            height: 14px;
+            border-top: 2px dotted rgba(53, 185, 176, 0.5);
+            border-bottom: 2px dotted rgba(240, 138, 177, 0.42);
+            opacity: 0.72;
+        }
+
+        .tldr-content {
+            font-size: 1rem;
+            line-height: 1.78;
+            color: var(--text);
+            padding-top: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .info-item {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,252,255,0.96));
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            min-width: 0;
+            box-sizing: border-box;
+            transition: max-height 0.3s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+            position: relative;
+            max-height: 78px;
+            overflow: hidden;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 22px rgba(48, 100, 142, 0.055);
+            animation: soft-rise 0.55s ease-out both;
+        }
+
+        .info-item:nth-child(2) { animation-delay: 0.04s; }
+        .info-item:nth-child(3) { animation-delay: 0.08s; }
+        .info-item:nth-child(4) { animation-delay: 0.12s; }
+
+        .info-item::before {
+            content: '';
+            position: absolute;
+            left: 0.8rem;
+            right: 0.8rem;
+            top: 0;
+            height: 3px;
+            border-radius: 0 0 5px 5px;
+            background: linear-gradient(90deg, var(--accent-light), var(--accent-mint));
+            opacity: 0.42;
+        }
+
+        .info-item:hover {
+            border-color: rgba(84, 183, 255, 0.38);
+            box-shadow: 0 14px 34px var(--shadow);
+            transform: translateY(-2px);
+            z-index: 10;
+            max-height: 300px;
+        }
+
+        .info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            margin-bottom: 0.375rem;
+        }
+
+        .info-value {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        .info-link {
+            color: var(--accent);
+            text-decoration: none;
+            display: block;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .info-link:hover {
+            text-decoration: underline;
+        }
+
+        .divider-section {
+            margin: 3rem 0 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .divider-line {
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent-light) 20%, var(--accent-mint) 50%, var(--accent-warm) 82%, transparent 100%);
+            border-radius: 1px;
+        }
+
+        .divider-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.28rem 0.78rem;
+            animation: breathe 3.6s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.35; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .prose h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-top: 2.35rem;
+            margin-bottom: 0.875rem;
+            color: var(--text);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            text-wrap: balance;
+        }
+
+        .heading-emoji {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.8rem;
+            height: 1.8rem;
+            margin-right: 0.48rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-soft), var(--warm-soft));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            box-shadow: 0 6px 16px rgba(48, 100, 142, 0.07);
+            font-size: 1rem;
+            vertical-align: -0.12em;
+        }
+
+        .prose h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.0625rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.625rem;
+            color: var(--accent);
+        }
+
+        .prose p {
+            font-size: 1.03rem;
+            line-height: 1.9;
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .prose ul, .prose ol {
+            margin-bottom: 1rem;
+            padding-left: 1.25rem;
+        }
+
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.65;
+        }
+
+        .prose li::marker {
+            color: var(--accent);
+        }
+
+        .prose blockquote {
+            background: rgba(255, 248, 223, 0.58);
+            border-left: 3px solid var(--accent-warm);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .prose code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #eef8ff;
+            color: var(--accent);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        .prose pre {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1a365d;
+            color: #bee3f8;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .prose pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .prose strong {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .prose a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .prose a:hover {
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .prose img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 1.25rem auto 0.5rem;
+            border: 1px solid rgba(215, 233, 247, 0.88);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 16px 40px var(--shadow-soft);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose img:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 48px var(--shadow);
+        }
+
+        .prose figure {
+            margin: 1.5rem 0;
+        }
+
+        .prose .image-caption,
+        .prose figcaption {
+            margin: 0.625rem auto 0;
+            max-width: 92%;
+            padding: 0.68rem 0.92rem;
+            color: #163b5a;
+            background: linear-gradient(135deg, rgba(255, 254, 250, 0.96), rgba(228, 244, 255, 0.9));
+            border: 1px solid rgba(84, 183, 255, 0.22);
+            border-radius: 8px;
+            font-family: 'Outfit', 'Source Serif 4', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 650;
+            line-height: 1.6;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(48, 100, 142, 0.06);
+        }
+
+        .prose .spotlight-section {
+            margin: 3rem -0.5rem 2.4rem;
+            padding: 1.45rem 1.55rem 1.55rem;
+            border: 1px solid rgba(84, 183, 255, 0.24);
+            border-left: 5px solid var(--accent-warm);
+            border-radius: 8px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 223, 0.82) 44%, rgba(255, 240, 246, 0.78) 100%);
+            box-shadow: 0 18px 44px var(--shadow-soft);
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prose .spotlight-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 54px var(--shadow);
+        }
+
+        .prose .spotlight-section::after {
+            content: '';
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            width: 46px;
+            height: 14px;
+            border-top: 2px dotted rgba(240, 138, 177, 0.38);
+            border-bottom: 2px dotted rgba(53, 185, 176, 0.32);
+            opacity: 0.8;
+        }
+
+        .prose .spotlight-section::before {
+            content: attr(data-label);
+            display: inline-block;
+            margin-bottom: 0.85rem;
+            padding: 0.18rem 0.55rem;
+            border-radius: 4px;
+            background: rgba(255, 240, 246, 0.86);
+            color: #b64f77;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .prose .spotlight-section h2 {
+            margin-top: 0;
+            color: #12314d;
+            border-bottom-color: rgba(25, 118, 201, 0.2);
+        }
+
+        .prose .spotlight-section p,
+        .prose .spotlight-section li {
+            color: #1c3650;
+        }
+
+        .prose .spotlight-section li {
+            margin-bottom: 0.72rem;
+        }
+
+        .prose .spotlight-section.research-block {
+            border-left-color: var(--accent-mint);
+            border-color: rgba(41, 167, 167, 0.24);
+            background:
+                linear-gradient(135deg, rgba(247, 252, 255, 0.98) 0%, rgba(228, 248, 245, 0.9) 58%, rgba(239, 248, 255, 0.9) 100%);
+        }
+
+        .prose .spotlight-section.research-block::before {
+            background: rgba(41, 167, 167, 0.12);
+            color: var(--accent-mint);
+        }
+
+        .prose table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            display: block;
+            overflow-x: auto;
+        }
+
+        .prose th,
+        .prose td {
+            border: 1px solid var(--border);
+            padding: 0.55rem 0.65rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .prose th {
+            background: #edf8ff;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .sidebar {
+            background: rgba(255, 254, 250, 0.88);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.375rem 0.75rem;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-left: 2px solid transparent;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.15s ease;
+        }
+
+        .toc-link:hover {
+            color: var(--accent);
+            background: rgba(84, 183, 255, 0.11);
+        }
+
+        .toc-link.active {
+            color: var(--accent);
+            border-left-color: var(--accent-warm);
+            background: linear-gradient(90deg, var(--accent-soft), rgba(255, 240, 246, 0.78));
+            font-weight: 600;
+        }
+
+        .toc-link.h3 {
+            font-size: 0.75rem;
+            padding-left: 1.25rem;
+            font-weight: 400;
+        }
+
+        .scroll-hint {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 2rem;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .scroll-hint-arrow {
+            display: inline-block;
+            margin-top: 0.25rem;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes float {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #a9dbfb; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-light); }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @keyframes soft-rise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+            article {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+                border-radius: 0;
+            }
+            .hero-title { font-size: 1.75rem; }
+            .prose p { text-align: left; }
+            .prose .spotlight-section { margin-left: 0; margin-right: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sidebar fixed left-0 top-0 h-screen w-56 p-5 overflow-y-auto hidden lg:block">
+        <div class="sticky top-4">
+            <div class="flex items-center gap-2 mb-8">
+                <svg viewBox="0 0 16 16" class="w-5 h-5" fill="none">
+                    <circle cx="6" cy="6" r="4" stroke="#0066cc" stroke-width="1.5" fill="none"/>
+                    <line x1="9.5" y1="9.5" x2="14" y2="14" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="6" cy="6" r="1.5" fill="#0066cc" opacity="0.3"/>
+                </svg>
+                <span class="font-['Outfit'] font-semibold text-sm text-[var(--text)]">PaperPulse</span>
+            </div>
+
+            <p class="font-['JetBrains_Mono'] text-xs text-[var(--muted)] uppercase tracking-widest mb-3">Contents</p>
+            <ul id="toc-list" class="space-y-1"></ul>
+        </div>
+    </nav>
+
+    <main class="lg:ml-56">
+        <article class="max-w-4xl mx-auto px-8 py-12 lg:py-16">
+
+            <header class="mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded">PAPER NOTE</span>
+                    <span class="font-['JetBrains_Mono'] text-xs text-[var(--muted)]">2026-05-04</span>
+                </div>
+            </header>
+
+            <section class="mb-6">
+                <h1 class="hero-title mb-6" id="hero-title">别再把 Agent 关在玩具环境里：Agent-World 想给它造一座会进化的训练城市</h1>
+
+                <div class="tldr-card mb-5">
+                    <p class="tldr-content" id="tldr-content">Loading...</p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <p class="info-label">PAPER</p>
+                        <div class="info-value" id="paper-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">CODE</p>
+                        <div class="info-value" id="code-links">-</div>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">AUTHORS</p>
+                        <p class="info-value" id="paper-authors">-</p>
+                    </div>
+                    <div class="info-item">
+                        <p class="info-label">KEYWORDS</p>
+                        <p class="info-value" id="paper-keywords">-</p>
+                    </div>
+                </div>
+
+                <div class="scroll-hint">
+                    <span>scroll for the brief</span>
+                    <span class="scroll-hint-arrow">↓</span>
+                </div>
+            </section>
+
+            <div class="divider-section">
+                <div class="divider-line"></div>
+                <span class="divider-text">FULL BRIEF</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <section class="prose" id="content">
+                <h2>TL;DR</h2>
+<p>Agent-World 盯上的不是“再给模型塞几个工具”，而是 Agent 训练长期缺少真实、可执行、会变难的环境。它从真实主题中合成近两千个工具环境，用可验证任务做多环境 RL，再让 Arena 诊断弱点、继续造题训练。结果显示，环境规模和自进化轮次都能带来稳定收益，但这更像一套训练基础设施，而不是一次性刷榜技巧。</p>
+<ul>
+<li>论文链接: <a href="https://arxiv.org/abs/2604.18292v1">arXiv:2604.18292v1</a></li>
+<li>代码链接: <a href="https://agent-tars-world.github.io/-/">Project Page</a>；未在 PDF 中提取到 GitHub 仓库</li>
+<li>作者团队: 中国人民大学高瓴人工智能学院；ByteDance Seed；Guanting Dong、Junting Lu、Junjie Huang 等</li>
+<li>关键词: 智能体训练，环境合成，工具调用，自进化学习，MCP</li>
+</ul>
+<h2>🌍 问题不是 Agent 不够聪明，而是它没在真实世界里练过</h2>
+<p>现在很多 Agent 训练听起来很热闹：工具调用、MCP、浏览器、代码执行、多轮任务。但真到训练阶段，环境经常还是太静态、太单轮、太像题库。模型可能学会了“看起来会调用工具”的格式，却没有真正学会在一个会被自己动作改变的环境里规划、试错、修正。</p>
+<p>Agent-World 这篇论文抓住的痛点很直接：通用 Agent 需要的不是更多孤立样例，而是一个足够丰富、可执行、可验证、还能持续进化的训练场。它把 Agent 训练重新拆成两个问题：第一，怎么规模化造出接近真实世界的工具环境；第二，怎么让模型在这些环境里不断暴露弱点，再被针对性训练。</p>
+<figure class="image-block"><img src="images/figure_01_p002.png" alt="Agent-World 的总览：左边是环境发现、任务合成和自进化训练闭环，右边展示了环境规模与下游表现的关系。" /><figcaption>Agent-World 的总览：左边是环境发现、任务合成和自进化训练闭环，右边展示了环境规模与下游表现的关系。</figcaption></figure>
+<p>这张总览图其实已经把论文主张说透了：Agent-World 不是只做数据集，也不是只做 RL，而是把“环境生成 -&gt; 任务验证 -&gt; 多环境训练 -&gt; 弱点诊断 -&gt; 再生成更针对的任务”串成闭环。对 Agent 来说，这比一次性喂大量静态轨迹更接近真实学习过程。</p>
+<h2>🧱 它先造环境，再造题，而且题必须能被验证</h2>
+<p>Agent-World 的第一步叫 Agentic Environment-Task Discovery。它从 MCP servers、工具文档、工业 PRD 等来源收集环境主题，然后让深度研究式 Agent 去挖数据库、生成工具接口、写测试、做交叉验证，最后组织成分层环境 taxonomy。</p>
+<p>这里最重要的不是“生成了多少文本”，而是每个环境都要落到可执行的数据库和工具函数上。Agent 在里面调用工具会读写状态，任务答案也能通过 rubric 或 verifier script 检查。这一点很关键，因为没有可执行反馈，Agent RL 很容易退化成让模型学会迎合 judge 的语言游戏。</p>
+<figure class="image-block"><img src="images/figure_02_p005.png" alt="环境和任务发现流水线：从真实主题出发，挖数据库、生成工具、构建 taxonomy，再合成可验证任务。" /><figcaption>环境和任务发现流水线：从真实主题出发，挖数据库、生成工具、构建 taxonomy，再合成可验证任务。</figcaption></figure>
+<p>论文最终保留了 1,978 个环境和 19,822 个工具。更值得看的是这些环境不是单一 API 复制粘贴：文件类型覆盖 json、csv、sql、html、yaml 等，任务交互步数平均超过 20，有相当一部分任务超过 40 步。换句话说，它想训练的不是“调用一个函数回答问题”，而是在一堆状态、文件和工具之间完成长期工作流。</p>
+<figure class="image-block"><img src="images/figure_04_p008.png" alt="Agent-World 环境与任务统计：环境域、工具数量、参数数量、文件类型、交互长度和任务难度都被统计出来。" /><figcaption>Agent-World 环境与任务统计：环境域、工具数量、参数数量、文件类型、交互长度和任务难度都被统计出来。</figcaption></figure>
+<p>这组统计图给了这篇论文一个比较扎实的支点。很多环境合成论文会强调规模，但规模本身不等于训练价值；Agent-World 至少进一步展示了工具覆盖、文件类型和任务长度，让读者能判断这些环境是否真的比“玩具工具调用”更复杂。</p>
+<h2>🔁 真正有意思的是：训练场会反过来挑模型的毛病</h2>
+<p>第二个核心组件是 Continuous Self-Evolving Agent Training。它先做多环境 RL：模型在不同环境中 rollout，工具接口执行动作，数据库状态发生变化，奖励来自代码执行或 rubric-conditioned reward。然后，Agent Arena 会在 held-out 环境中动态合成任务，收集失败轨迹，让诊断 Agent 找出弱环境和错误类型，再生成更有针对性的训练任务。</p>
+<p>这套机制的思路很像一个严格的导师：不是只给学生更多题，而是先看他哪里错、为什么错、在哪类题上错，再围绕这个弱点继续出题。</p>
+<figure class="image-block"><img src="images/figure_05_p010.png" alt="连续自进化训练框架：上半部分是多环境 RL，下半部分是动态 Arena、失败诊断和针对性数据扩展。" /><figcaption>连续自进化训练框架：上半部分是多环境 RL，下半部分是动态 Arena、失败诊断和针对性数据扩展。</figcaption></figure>
+<p>这个设计的价值在于，它把环境从“训练材料”升级成了“诊断设备”。如果一个 Agent 在某类数据库更新、长链工具依赖、状态追踪任务上频繁失败，Arena 会把这些失败转化成下一轮训练的目标。这比一次性扩充训练集更贴近 Agent 系统部署后的真实迭代方式。</p>
+<h2>📊 结果最强的信号：小模型路线在工具环境里被明显拉起来了</h2>
+<p>主结果表覆盖 MCP-Mark、BFCL V4 和 τ²-Bench 三组 agentic tool-use benchmark。Agent-World-8B 达到 MCP-Mark 8.9、BFCL V4 51.4、τ²-Bench 61.8；Agent-World-14B 进一步到 13.3、55.8、65.4。在开源环境扩展方法这一组里，它基本是最强的。</p>
+<figure class="image-block"><img src="images/table_01_main_results_full.png" alt="主结果表：Agent-World-8B/14B 在开源环境扩展方法中取得最强或接近最强结果。" /><figcaption>主结果表：Agent-World-8B/14B 在开源环境扩展方法中取得最强或接近最强结果。</figcaption></figure>
+<p>但这里也要冷静一点看：这张表并不支持“Agent-World 全面击败闭源旗舰模型”这种粗暴说法。闭源模型在不少指标上仍然更高，尤其 τ²-Bench 上 GPT-5.2 High、Claude Sonnet-4.5、Gemini-3 Pro 仍有优势。Agent-World 更可信的结论是：在 8B/14B 这个开源可训练规模上，真实环境扩展和自进化训练确实能把工具使用能力明显抬起来，并且在 BFCL V4 上 Agent-World-14B 的 55.8 还超过了 DeepSeek-V3.2-685B 的 54.1。</p>
+<p>这也是这篇论文最实际的价值：它不是告诉你“14B 立刻比所有大模型都强”，而是说明如果训练环境足够真实、反馈足够可验证、迭代足够有针对性，小模型在 Agent 场景里还能继续被系统性挖潜。</p>
+<h2>🧪 泛化部分说明：它学到的不只是某个工具的套路</h2>
+<p>论文还测试了更宽的泛化场景，包括一般推理、搜索与代码、Knowledge &amp; MCP。Figure 6 里，Agent-World-8B 在 WebWalkerQA、SWE、Terminal、GAIA、MCP-Universe 相关能力上都有比较明显的改善，同时没有牺牲 MATH、GSM8K 这类基础推理表现。</p>
+<figure class="image-block"><img src="images/figure_06_long_horizon_generalization_clean.png" alt="长程 Agent 推理泛化：Agent-World-8B 在一般推理、搜索代码、Knowledge &amp; MCP 三类能力上对比 Qwen3-8B 和 EnvScaler-8B。" /><figcaption>长程 Agent 推理泛化：Agent-World-8B 在一般推理、搜索代码、Knowledge &amp; MCP 三类能力上对比 Qwen3-8B 和 EnvScaler-8B。</figcaption></figure>
+<p>这点对 Agent 训练很重要。一个常见风险是，工具 RL 训练会把模型训得很“窄”：格式更熟、套路更强，但基础推理和跨任务迁移变差。Agent-World 的实验至少显示，在这些 benchmark 上，它没有明显走向这种窄化，尤其在长程搜索、代码和 MCP 场景中收益更集中。</p>
+<p>在 advanced agentic assistant benchmarks 上，Agent-World 也展示了 8B 到 14B 的稳定提升：SkillsBench 从 9.2 到 12.6，ARC-AGI-2 从 6.5 到 8.5，ClawEval 从 30.5 到 31.5。绝对数值不算夸张，但方向比较一致。</p>
+<figure class="image-block"><img src="images/figure_07_assistant_benchmarks_clean.png" alt="高级 Agent 助手基准：Agent-World 在 SkillsBench、ARC-AGI-2、ClawEval 上和多个开源基线对比。" /><figcaption>高级 Agent 助手基准：Agent-World 在 SkillsBench、ARC-AGI-2、ClawEval 上和多个开源基线对比。</figcaption></figure>
+<p>我会把这部分理解为“可迁移性的证据”，但不是“通用智能已经解决”的证据。Advanced assistant benchmark 的分数整体还很低，说明真实复杂任务仍然很难；Agent-World 是把曲线往上推了一截，而不是把问题终结了。</p>
+<h2>📈 环境越多越好？答案是：前期很值，后期还涨但开始变慢</h2>
+<p>论文专门做了环境规模分析：训练环境从 0、10、100、500、1000 到接近 2000 个逐步增加，下游平均分从 18.4 提到 38.5，涨了 20.1 个点。最明显的跃迁发生在 10 到 100、100 到 500 这两个阶段；500 到 2000 仍然增长，但边际收益变小。</p>
+<figure class="image-block"><img src="images/figure_08_p016.png" alt="环境规模 scaling：训练环境数量增加时，MCPMark、BFCL 和 τ²-Bench 代表性子域表现持续上升。" /><figcaption>环境规模 scaling：训练环境数量增加时，MCPMark、BFCL 和 τ²-Bench 代表性子域表现持续上升。</figcaption></figure>
+<p>这给了一个很实用的启发：Agent 训练的早期瓶颈可能不是模型参数，而是“没见过足够多种真实环境”。当环境类型从几十扩到几百时，模型迅速补上很多高频交互模式；继续扩到近两千时，收益更多来自长尾鲁棒性。</p>
+<p>如果把这件事放到工程实践里看，它意味着团队不一定一开始就追求无限大的环境库。更合理的路径可能是先覆盖高价值环境族，建立可验证任务和失败诊断闭环，再逐步向长尾扩展。</p>
+<h2>🛠️ 自进化不是口号：两轮以后，最难的 MCP 场景涨得最多</h2>
+<p>连续自进化实验是这篇论文最有说服力的部分之一。Agent-World-14B 从 base 到两轮自进化后，τ²-Bench 从 60.2 到 65.4，BFCL-V4 从 52.4 到 55.8，MCP-Mark(Post.) 从 29.5 到 38.1。EnvScaler-8B 作为另一个起点，也从 37.9/47.6/9.5 提升到 41.6/50.0/15.1。</p>
+<figure class="image-block"><img src="images/table_02_self_evolution_clean.png" alt="连续自进化效果：Agent-World-14B 和 EnvScaler-8B 经过两轮 Arena 诊断与继续训练后持续提升。" /><figcaption>连续自进化效果：Agent-World-14B 和 EnvScaler-8B 经过两轮 Arena 诊断与继续训练后持续提升。</figcaption></figure>
+<p>最值得注意的是 MCP-Mark(Post.)：Agent-World-14B 两轮提升 8.6 个点，EnvScaler-8B 也提升 5.6 个点。MCP-Mark 更强调状态追踪、真实服务交互和长链工具执行，所以它对“诊断弱点 -&gt; 生成目标任务 -&gt; 继续 RL”这套机制更敏感。</p>
+<p>训练动态也给了一个侧面证据：Qwen3-8B/14B 的 reward 曲线持续上升，entropy 没有迅速坍塌。也就是说，模型不是简单背某种固定动作模板，而是在训练过程中维持了一定探索空间。</p>
+<figure class="image-block"><img src="images/figure_09_p017.png" alt="训练动态：Qwen3-8B/14B 在合成环境上的 reward 上升，actor entropy 保持或增长。" /><figcaption>训练动态：Qwen3-8B/14B 在合成环境上的 reward 上升，actor entropy 保持或增长。</figcaption></figure>
+<h2>💬 我会如何读这篇论文</h2>
+<p>我觉得 Agent-World 最值得肯定的地方，是它把 Agent 训练从“样本工程”推进到了“环境工程”。对通用 Agent 来说，工具调用能力不是靠几条漂亮轨迹堆出来的，而是靠大量可执行环境里的反复交互、失败、修正和再训练磨出来的。这篇论文把这个过程工程化了。</p>
+<p>但我也会保留几个谨慎点。第一，环境和任务合成本身大量依赖 LLM agent、GPT-OSS-120B、自动 verifier 和诊断 agent，数据质量到底有多少人工可审计性，还需要更透明的发布和复现实验支撑。第二，benchmark 很多，但真实部署里最难的是权限、成本、异常恢复、安全边界和用户目标漂移，这些并不完全等同于离线可验证任务。第三，表格里闭源大模型仍然很强，所以不要把这篇论文读成“环境合成路线已经碾压模型规模路线”；更准确的判断是：环境规模和自进化训练正在成为 Agent 能力扩展的一条独立杠杆。</p>
+<h2>🌱 值得关注的地方</h2>
+<ol>
+<li>环境质量比环境数量更值得继续追。Figure 8 说明规模有效，但边际收益递减。下一步真正关键的是哪些环境最能带来迁移，哪些只是重复覆盖。</li>
+</ol>
+<ol>
+<li>自进化 Arena 能不能用于真实线上 Agent。论文里的 Arena 是可控、可验证的训练场；如果把失败诊断接到真实用户工作流，如何处理隐私、权限、不可逆动作和安全风险，会是更难的问题。</li>
+</ol>
+<ol>
+<li>Verifier 和 reward 的可信度需要更强评估。Agent 训练越依赖可执行验证，verifier 的漏洞就越可能变成模型的投机空间。未来可以专门研究 reward hacking、验证覆盖率和 adversarial task generation。</li>
+</ol>
+<ol>
+<li>小模型 Agent 的路线值得继续看。Agent-World 说明 8B/14B 还有很大训练空间。对实际部署来说，这比单纯等待更大的闭源模型更有工程吸引力：可控、可私有化、可围绕业务环境持续进化。</li>
+</ol>
+<p>总的来说，Agent-World 不是一篇只靠漂亮曲线取胜的论文。它真正提出的是一种 Agent 训练范式：把真实环境本身当作可扩展、可诊断、可迭代的基础设施。这个方向如果继续做实，可能会比“再写一个更复杂的 prompt harness”更接近通用 Agent 能力的底层解法。</p>
+            </section>
+
+            <footer class="footer">
+                <p class="footer-text">Generated by PaperPulse Lite</p>
+            </footer>
+
+        </article>
+    </main>
+
+    <script>
+        const content = document.getElementById('content');
+
+        const firstH1 = content.querySelector('h1');
+        if (firstH1) {
+            firstH1.style.display = 'none';
+        }
+
+        const tldrH2 = Array.from(content.querySelectorAll('h2')).find(h => h.textContent.toLowerCase().includes('tl;dr'));
+        if (tldrH2) {
+            let tldrText = '';
+            let nextEl = tldrH2.nextElementSibling;
+            while (nextEl && nextEl.tagName !== 'H2') {
+                if (nextEl.tagName === 'P') {
+                    tldrText += nextEl.textContent.trim() + ' ';
+                }
+                nextEl = nextEl.nextElementSibling;
+            }
+            if (tldrText) {
+                document.getElementById('tldr-content').textContent = tldrText.trim().substring(0, 350);
+            }
+        }
+
+        const paperLinksContainer = document.getElementById('paper-links');
+        const codeLinksContainer = document.getElementById('code-links');
+        const authorContainer = document.getElementById('paper-authors');
+        const keywordContainer = document.getElementById('paper-keywords');
+        let paperHtml = '';
+        let codeHtml = '';
+        let paperText = '';
+        let codeText = '';
+        let authorText = '';
+        let keywordText = '';
+        const metadataByLabel = {};
+        const paperUrls = new Set();
+        const codeUrls = new Set();
+
+        const escapeHtml = (value) => value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        const valueAfterLabel = (text, pattern) => {
+            const cleaned = text.replace(/\s+/g, ' ').trim();
+            const match = cleaned.match(pattern);
+            return match ? match[1].trim() : '';
+        };
+
+        const addMetadataValue = (label, value) => {
+            const normalizedLabel = label.replace(/\s+/g, '').toLowerCase();
+            const cleanedValue = value.replace(/\s+/g, ' ').trim();
+            if (!normalizedLabel || !cleanedValue) return;
+            metadataByLabel[normalizedLabel] = cleanedValue;
+        };
+
+        const collectLabeledMetadata = (el) => {
+            const text = el.textContent.replace(/\s+/g, ' ').trim();
+            const match = text.match(/^([^:：]{2,32})[:：]\s*(.+)$/);
+            if (match) addMetadataValue(match[1], match[2]);
+        };
+
+        const isPaperUrl = (url) => /arxiv\.org\/(abs|pdf)|doi\.org/i.test(url);
+        const isCodeUrl = (url) => /github\.com|gitlab\.com|huggingface\.co|modelscope\.cn|project|demo|github\.io/i.test(url);
+        const hasUrl = (text) => /https?:\/\/|arxiv\.org|doi\.org|github\.com|gitlab\.com|huggingface\.co|modelscope\.cn/i.test(text || '');
+        const looksLikeKeywords = (text) => {
+            const value = (text || '').trim();
+            if (!value) return false;
+            const parts = value.split(/[,，、;；]/).map(item => item.trim()).filter(Boolean);
+            return parts.length >= 3 && parts.length <= 8 && parts.every(item => item.length <= 28);
+        };
+
+        const appendInfoLink = (kind, url, label) => {
+            const normalized = url.trim().replace(/[.,;，。；]+$/, '');
+            if (!normalized || !normalized.startsWith('http')) return;
+            const safeUrl = escapeHtml(normalized);
+            const safeLabel = escapeHtml((label || normalized).trim());
+            if (kind === 'code') {
+                if (codeUrls.has(normalized)) return;
+                codeUrls.add(normalized);
+                codeHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+                return;
+            }
+            if (paperUrls.has(normalized)) return;
+            paperUrls.add(normalized);
+            paperHtml += `<a href="${safeUrl}" target="_blank" class="info-link">${safeLabel}</a>`;
+        };
+
+        const addLinksFromElement = (el, target) => {
+            const links = el.querySelectorAll('a');
+            links.forEach(a => {
+                const url = a.getAttribute('href');
+                if (!url || !url.startsWith('http')) return;
+                const label = a.textContent.trim();
+                if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+                else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+                else if (target === 'code') appendInfoLink('code', url, label);
+            });
+
+            if (!links.length) {
+                const urlMatches = el.textContent.match(/https?:\/\/[^\s)）]+/g);
+                if (urlMatches) {
+                    urlMatches.forEach(url => {
+                        if (isPaperUrl(url)) appendInfoLink('paper', url, url);
+                        else if (isCodeUrl(url)) appendInfoLink('code', url, url);
+                        else if (target === 'code') appendInfoLink('code', url, url);
+                    });
+                }
+            }
+        };
+
+        const nearbyMetadataElements = Array.from(content.querySelectorAll('p, li')).slice(0, 18);
+        nearbyMetadataElements.forEach(el => {
+            const text = el.textContent.trim();
+            const lower = text.toLowerCase();
+            collectLabeledMetadata(el);
+            addLinksFromElement(el, lower.includes('代码') || lower.includes('code') ? 'code' : 'paper');
+            if (!paperText && /论文链接|paper|arxiv|doi/i.test(text)) {
+                paperText = valueAfterLabel(text, /(?:论文链接|Paper|paper|arXiv|arxiv|DOI|doi)[:：]\s*(.+)$/i);
+            }
+            if (!codeText && /代码链接|code|github|repo/i.test(text)) {
+                codeText = valueAfterLabel(text, /(?:代码链接|Code|code|GitHub|github|Repo|repo)[:：]\s*(.+)$/i);
+            }
+            if (!authorText && /作者|团队|机构|authors?|affiliations?/i.test(text)) {
+                authorText = text.replace(/^(作者团队|作者|团队|机构|Authors?|Affiliations?)[:：]\s*/i, '').trim();
+            }
+            if (!keywordText && /关键词|keywords?/i.test(text)) {
+                keywordText = text.replace(/^(关键词|Keywords?)[:：]\s*/i, '').trim();
+            }
+        });
+
+        const headings = content.querySelectorAll('h2');
+        let infoH2 = null;
+        headings.forEach(h => {
+            if (h.textContent.includes('论文基本信息') || h.textContent.includes('论文信息') || h.textContent.includes('论文链接') || h.textContent.toLowerCase().includes('info')) {
+                infoH2 = h;
+            }
+        });
+
+        if (infoH2) {
+            let current = infoH2.nextElementSibling;
+            const infoElements = [];
+            while (current && current.tagName !== 'H2') {
+                if (current.matches && current.matches('p, ul, ol')) {
+                    infoElements.push(current);
+                    current.querySelectorAll('li').forEach(li => infoElements.push(li));
+                }
+                current.style.display = 'none';
+                current = current.nextElementSibling;
+            }
+            infoElements.forEach(el => {
+                collectLabeledMetadata(el);
+                addLinksFromElement(el, /代码|code|github|repo/i.test(el.textContent) ? 'code' : 'paper');
+            });
+
+            const codeH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('代码'));
+            const paperH3 = Array.from(content.querySelectorAll('h3')).find(h => h.textContent.includes('论文链接'));
+
+            if (paperH3) {
+                let el = paperH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'paper');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (codeH3) {
+                let el = codeH3.nextElementSibling;
+                while (el && el.tagName !== 'H3' && el.tagName !== 'H2') {
+                    addLinksFromElement(el, 'code');
+                    el = el.nextElementSibling;
+                }
+            }
+
+            if (!paperHtml && !codeHtml) {
+                const allLinks = content.querySelectorAll('a');
+                allLinks.forEach(a => {
+                    const url = a.getAttribute('href') || '';
+                    const label = a.textContent.trim();
+                    if (url.startsWith('http')) {
+                        if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+                        else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+                    }
+                });
+            }
+
+            const authorH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('作者'));
+            if (authorH) {
+                const nextEl = authorH.nextElementSibling;
+                if (nextEl) {
+                    const authorLis = nextEl.querySelectorAll('li');
+                    if (authorLis.length > 0) {
+                        const authors = Array.from(authorLis).map(li => li.textContent.trim()).slice(0, 3);
+                        authorText = authors.join(', ');
+                    } else {
+                        const rawText = nextEl.textContent.trim();
+                        const parts = rawText.split(/[,，;；\n]/);
+                        const top3 = parts.slice(0, 3).join(', ');
+                        authorText = top3;
+                    }
+                }
+            }
+
+            const keywordH = Array.from(content.querySelectorAll('h2, h3')).find(h => h.textContent.includes('关键词'));
+            if (keywordH) {
+                const nextEl = keywordH.nextElementSibling;
+                if (nextEl) {
+                    const keywordLis = nextEl.querySelectorAll('li');
+                    if (keywordLis.length > 0) {
+                        keywordText = Array.from(keywordLis).map(li => li.textContent.trim()).join(', ');
+                    } else {
+                        keywordText = nextEl.textContent.trim();
+                    }
+                }
+            }
+        }
+
+        const metadataValue = (...labels) => {
+            for (const label of labels) {
+                const key = label.replace(/\s+/g, '').toLowerCase();
+                if (metadataByLabel[key]) return metadataByLabel[key];
+            }
+            return '';
+        };
+
+        paperText = metadataValue('论文链接', '论文', 'paper', 'arxiv', 'doi') || paperText;
+        codeText = metadataValue('代码链接', '代码', '项目链接', '项目页', 'code', 'repo', 'github') || codeText;
+        authorText = metadataValue('作者团队', '作者', '团队', '机构', 'authors', 'affiliations') || authorText;
+        keywordText = metadataValue('关键词', 'keywords') || keywordText;
+
+        const allMetadataLinks = content.querySelectorAll('a');
+        allMetadataLinks.forEach(a => {
+            const url = a.getAttribute('href') || '';
+            const label = a.textContent.trim();
+            if (isPaperUrl(url)) appendInfoLink('paper', url, label);
+            else if (isCodeUrl(url)) appendInfoLink('code', url, label);
+        });
+
+        const cleanPlainInfo = (text) => (text || '')
+            .replace(/https?:\/\/[^\s,，;；)）]+/g, '')
+            .replace(/(?:论文链接|代码链接|项目链接|Paper|Code|Repo|GitHub|关键词|Keywords?)[:：]/gi, '')
+            .replace(/\s+/g, ' ')
+            .replace(/^[,，;；、\s]+|[,，;；、\s]+$/g, '')
+            .trim();
+
+        const sanitizeAuthors = (text) => {
+            let value = cleanPlainInfo(text);
+            if (!value || hasUrl(value) || /关键词|论文链接|代码链接|Paper|Code|GitHub/i.test(value) || looksLikeKeywords(value)) {
+                value = cleanPlainInfo(metadataValue('作者团队', '作者', '团队', '机构', 'authors', 'affiliations'));
+            }
+            return value;
+        };
+
+        const sanitizeKeywords = (text) => {
+            let value = cleanPlainInfo(text);
+            if (!value || hasUrl(value) || /作者|团队|机构|论文链接|代码链接|Paper|Code|GitHub/i.test(value)) {
+                value = cleanPlainInfo(metadataValue('关键词', 'keywords'));
+            }
+            const parts = value.split(/[,，、;；]/).map(item => item.trim()).filter(Boolean);
+            if (parts.length > 8) value = parts.slice(0, 8).join('，');
+            return value;
+        };
+
+        authorText = sanitizeAuthors(authorText);
+        keywordText = sanitizeKeywords(keywordText);
+
+        if (paperText && hasUrl(paperText)) {
+            (paperText.match(/https?:\/\/[^\s,，;；)）]+/g) || []).forEach(url => {
+                if (isPaperUrl(url)) appendInfoLink('paper', url, url);
+            });
+        }
+        if (codeText && hasUrl(codeText)) {
+            (codeText.match(/https?:\/\/[^\s,，;；)）]+/g) || []).forEach(url => {
+                if (isCodeUrl(url)) appendInfoLink('code', url, url);
+            });
+        }
+
+        if (paperHtml) paperLinksContainer.innerHTML = paperHtml;
+        else if (paperText) paperLinksContainer.innerHTML = escapeHtml(paperText);
+        if (codeHtml) codeLinksContainer.innerHTML = codeHtml;
+        else if (codeText) codeLinksContainer.innerHTML = escapeHtml(codeText);
+        if (authorText) authorContainer.textContent = authorText.substring(0, 180);
+        if (keywordText) keywordContainer.textContent = keywordText.substring(0, 180);
+
+        const spotlightRules = [
+            {
+                className: 'commentary-block',
+                label: 'Reading Note',
+                patterns: ['我会如何读', '我怎么看', '我的看法', '点评', '评价', '边界', '值得警惕', '冷静话', '读这篇论文']
+            },
+            {
+                className: 'research-block',
+                label: 'Tiny Sparks',
+                patterns: ['值得关注', '研究方向', '后续研究', '未来方向', '延伸思考', '开放问题', '接下来值得追', '值得追的问题', '之后可以', '思考']
+            }
+        ];
+
+        const wrapSection = (heading, rule) => {
+            if (heading.closest('.spotlight-section')) return;
+            const wrapper = document.createElement('section');
+            wrapper.className = `spotlight-section ${rule.className}`;
+            wrapper.dataset.label = rule.label;
+            heading.parentNode.insertBefore(wrapper, heading);
+            wrapper.appendChild(heading);
+            let next = wrapper.nextSibling;
+            while (next) {
+                const current = next;
+                next = next.nextSibling;
+                if (current.nodeType === Node.ELEMENT_NODE && current.tagName === 'H2') break;
+                wrapper.appendChild(current);
+            }
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            const text = h.textContent.trim();
+            const matched = spotlightRules.find(rule => rule.patterns.some(pattern => text.includes(pattern)));
+            if (matched && h.style.display !== 'none') {
+                wrapSection(h, matched);
+            }
+        });
+
+        const headingEmojiRules = [
+            { emoji: '⚡', patterns: ['tl;dr'] },
+            { emoji: '📌', patterns: ['论文基本信息', '论文信息'] },
+            { emoji: '🧩', patterns: ['不是', '问题', '现场', '痛点', '为什么', '背景'] },
+            { emoji: '🛠️', patterns: ['方法', '框架', '构建', '流程', '数据从哪里来', '系统', '模型'] },
+            { emoji: '📊', patterns: ['结果', '实验', '评测', 'benchmark', '指标', '解决率'] },
+            { emoji: '🔍', patterns: ['分析', '检索', '上下文', '错误', '案例', '失败'] },
+            { emoji: '💬', patterns: ['我会如何读', '我怎么看', '点评', '边界', '评价'] },
+            { emoji: '🌱', patterns: ['值得关注', '研究方向', '后续', '未来', '思考', '开放问题'] }
+        ];
+
+        const emojiForHeading = (heading) => {
+            const text = heading.textContent.trim().toLowerCase();
+            const matched = headingEmojiRules.find(rule => rule.patterns.some(pattern => text.includes(pattern.toLowerCase())));
+            return matched ? matched.emoji : '✦';
+        };
+
+        Array.from(content.querySelectorAll('h2')).forEach(h => {
+            if (h.style.display === 'none' || h.dataset.emojiAdded === 'true') return;
+            const emoji = document.createElement('span');
+            emoji.className = 'heading-emoji';
+            emoji.setAttribute('aria-hidden', 'true');
+            emoji.textContent = emojiForHeading(h);
+            h.prepend(emoji);
+            h.dataset.emojiAdded = 'true';
+        });
+
+        const tocList = document.getElementById('toc-list');
+        const heroSection = document.querySelector('section.mb-6');
+        if (heroSection) {
+            heroSection.id = 'brief';
+            const briefLi = document.createElement('li');
+            const briefA = document.createElement('a');
+            briefA.href = '#brief';
+            briefA.textContent = 'Brief';
+            briefA.className = 'toc-link';
+            briefLi.appendChild(briefA);
+            tocList.appendChild(briefLi);
+        }
+
+        const allHeadings = content.querySelectorAll('h2, h3');
+        const exclude = ['tl;dr', '论文基本信息', '论文信息', '论文链接', '代码链接', '作者团队', '关键词'];
+
+        allHeadings.forEach((h, i) => {
+            const text = h.textContent.toLowerCase();
+            if (h.style.display === 'none') return;
+            if (exclude.some(e => text.includes(e.toLowerCase()))) {
+                h.style.display = 'none';
+                let current = h.nextElementSibling;
+                while (current && current.tagName !== 'H2') {
+                    current.style.display = 'none';
+                    current = current.nextElementSibling;
+                }
+                return;
+            }
+
+            const id = `s-${i}`;
+            h.id = id;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#${id}`;
+            a.textContent = h.textContent;
+            a.className = `toc-link ${h.tagName === 'H3' ? 'h3' : ''}`;
+            li.appendChild(a);
+            tocList.appendChild(li);
+        });
+
+        const tocLinks = tocList.querySelectorAll('.toc-link');
+        const highlight = () => {
+            let current = null;
+            if (heroSection && heroSection.getBoundingClientRect().top > -50) {
+                current = 'brief';
+            }
+            allHeadings.forEach(h => {
+                if (h.id && h.getBoundingClientRect().top <= 100) current = h.id;
+            });
+            tocLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+            });
+        };
+        window.addEventListener('scroll', highlight, { passive: true });
+        highlight();
+    </script>
+</body>
+</html>
