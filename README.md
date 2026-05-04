@@ -11,7 +11,6 @@
 点击标题查看输出效果：
 
 |   | 解读标题 |
-|   | 解读标题 |
 |:---:|---|
 | 🧠 | [别再把 Agent 的记忆当数据库了：A-MEM 让它学会整理、联想和更新经验](https://w1ndz321.github.io/paperpulse-skill/a-mem-agentic-memory/report.html) |
 | 💾 | [8K 窗口硬闯 350 万 tokens：MemAgent 让模型学会边读边记](https://w1ndz321.github.io/paperpulse-skill/memagent-reshaping-long-context/report.html) |
@@ -61,8 +60,6 @@ git clone https://github.com/w1ndz321/paperpulse-skill ~/.codex/skills/paperpuls
 # 或
 使用 paperpulse-skill 阅读这篇文章 /path/to/paper.pdf
 ```
-
-输出至 ，包含 、 和 。
 
 ---
 
