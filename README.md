@@ -7,9 +7,6 @@
 ---
 
 ## 📖 效果展示
-
-点击标题查看输出效果：
-
 |   | 解读标题 |
 |:---:|---|
 | 🧠 | [别再把 Agent 的记忆当数据库了：A-MEM 让它学会整理、联想和更新经验](https://w1ndz321.github.io/paperpulse-skill/a-mem-agentic-memory/report.html) |
